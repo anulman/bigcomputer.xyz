@@ -1,4 +1,5 @@
 .next
+.linaria-cache
 
 node_modules
 
