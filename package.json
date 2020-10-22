@@ -1,0 +1,9 @@
+{
+  "name": "big-computer",
+  "version": "0.0.1",
+  "description": "www.taleofthebigcomputer.com",
+  "main": "index.js",
+  "author": "@anulman <anulman@gmail.com>",
+  "license": "Copyright 10667994 Canada Inc.",
+  "private": true
+}
