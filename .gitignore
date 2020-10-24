@@ -2,5 +2,6 @@
 .linaria-cache
 
 node_modules
+out
 
 **/*.log
