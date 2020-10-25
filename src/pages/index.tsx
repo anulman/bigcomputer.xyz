@@ -1,10 +1,7 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 
-import { Button } from '../components/Button';
+import Home from '../components/Home';
 
-export default function HomePage(): ReactNode {
-  return <main className='bg-red-900'>
-    <h1>Welcome to Next.js!</h1>
-    <Button type='button'>im a linaria-styled button</Button>
-  </main>;
+export default function HomePage(): JSX.Element {
+  return <Home />;
 }
