@@ -1,7 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
 const withCSS = require('@zeit/next-css');
+const withOptimizedImages = require('next-optimized-images');
+/* eslint-enable @typescript-eslint/no-var-requires */
 
-module.exports = withCSS({
+module.exports = withOptimizedImages(withCSS({
   webpack(config) {
     config.module.rules.push({
       test: /\.tsx?$/,
@@ -10,4 +12,4 @@ module.exports = withCSS({
 
     return config;
   },
-});
+}));
