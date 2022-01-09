@@ -10,7 +10,8 @@ const Page = styled.main`
   @apply mx-auto;
 
   font-size: 1rem;
-  width: 72ch;
+  max-width: 72ch;
+  width: 100%;
   padding: 3rem 0;
   line-height: 1.3;
 
