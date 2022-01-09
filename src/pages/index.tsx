@@ -1,68 +1,68 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
 import * as windups from 'windups';
-// todo - LineBreakers, CharacterWrappers...
+// todo - LineBreaker?, CharacterWrappers...
 
-const BEAT_MS = 200;
+import { Avatar } from '@src/components/Avatar';
+
+const BEAT_MS = 300;
 const Page = styled.main`
-  @apply mx-auto text-justify;
+  @apply mx-auto;
 
-  font-family: Helvetica Neue;
-  font-size: 16px;
+  font-size: 1rem;
   width: 72ch;
+  padding: 3rem 0;
+  line-height: 1.3;
 
-  > :first-child > p + p {
+  > p + p {
     margin-top: 1rem;
   }
 `;
 
 export default function HomePage(): JSX.Element {
-  const pageRef = React.useRef<HTMLDivElement>(null);
-  const [pageWidth, setPageWidth] = React.useState(300);
+  // todo - enum?
+  const [currentParagraph, setCurrentParagraph] = React.useState(-1);
+  const pauseThenMoveToNextParagraph = React.useCallback(
+    () => setTimeout(() => setCurrentParagraph(currentParagraph + 1), 3 * BEAT_MS),
+    [currentParagraph],
+  );
 
-  React.useEffect(() => {
-    if (pageRef.current) {
-      const { width } = pageRef.current.getBoundingClientRect();
+  React.useEffect(() => { pauseThenMoveToNextParagraph(); }, []);
 
-      setPageWidth(width);
-    }
-  }, [pageRef.current]);
+  return <Page>
+    <Avatar size={25} />
 
-  return <Page ref={pageRef}>
-    <WoundUpText width={pageWidth}>
-      <p>
-        In 1966, <windups.Pause ms={BEAT_MS} />
-        three years before the ARPAnet delivered its first packet [1] <windups.Pause ms={BEAT_MS} />
-        and two years before engelbart&apos;s mother of all demos [2], <windups.Pause ms={2*BEAT_MS} />
-        a father/daughter duo [3] published a history of the internet in a Swedish sci-fi novel.
-      </p>
-      <windups.Pause ms={2*BEAT_MS} />
+    {currentParagraph >= 0 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
+      In 1966, <windups.Pause ms={BEAT_MS} />
+      three years before the ARPAnet delivered its first packet [1] <windups.Pause ms={2 * BEAT_MS} />
+      and two years before engelbart&apos;s mother of all demos [2], <windups.Pause ms={2 * BEAT_MS} />
+      a father/daughter duo [3] published a history of the internet in a Swedish sci-fi novel.
+    </Paragraph>}
 
-      <p>
-        Tale of the Big Computer was first translated, published, and widely panned in 1968 [4].
-        It has built a small following over the last 50-odd years for its uncanny prescience;
-        the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
-        but also how that system acts on us [5].
-      </p>
+    {currentParagraph >= 1 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
+      Tale of the Big Computer was first translated, published, and widely panned in 1968 [4].
+      It has built a small following over the last 50-odd years for its uncanny prescience;
+      the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
+      but also how that system acts on us [5].
+    </Paragraph>}
 
-      <p>
-        We are publishing a new English edition of this Swedish cult classic.
-        The original books have become quite rare and expensive [6],
-        and the 1968 translation is both unnecessarily and inaccurately gendered [7].
-      </p>
+    {currentParagraph >= 2 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
+      We are publishing a new English edition of this Swedish cult classic.
+      The original books have become quite rare and expensive [6],
+      and the 1968 translation is both unnecessarily and inaccurately gendered [7].
+    </Paragraph>}
 
-      <p>
-        Pledge $15 or 15 DAI to join our community,
-        receive a limited &quot;first edition&quot; ebook at release, and more [8].
-      </p>
-    </WoundUpText>
+    {currentParagraph >= 3 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
+      Pledge $15 or 15 DAI to join our community,
+      receive a limited &quot;first edition&quot; ebook at release, and more [8].
+    </Paragraph>}
   </Page>;
 }
 
-const WoundUpText = ({ children, width }: React.PropsWithChildren<{ width: number }>) => (
-  typeof window === 'undefined'
-    ? <windups.WindupChildren>{children}</windups.WindupChildren>
-    : <windups.Linebreaker fontStyle={'16px Helvetica Neue'} width={width}>
-      <windups.WindupChildren>{children}</windups.WindupChildren>
-    </windups.Linebreaker>
+const Paragraph = ({ children, onFinished }: React.PropsWithChildren<{onFinished: () => unknown}>): JSX.Element => (
+  <p>
+    <windups.WindupChildren onFinished={onFinished}>
+      {children}
+    </windups.WindupChildren>
+  </p>
 );
