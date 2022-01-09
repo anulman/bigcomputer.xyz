@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 import { styled } from 'linaria/react';
 import * as windups from 'windups';
 // todo - LineBreakers, CharacterWrappers...
-
-import Home from '../components/Home';
 
 const BEAT_MS = 200;
 const Page = styled.main`
@@ -19,10 +17,10 @@ const Page = styled.main`
 `;
 
 export default function HomePage(): JSX.Element {
-  const pageRef = useRef<HTMLDivElement>(null);
-  const [pageWidth, setPageWidth] = useState(300);
+  const pageRef = React.useRef<HTMLDivElement>(null);
+  const [pageWidth, setPageWidth] = React.useState(300);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (pageRef.current) {
       const { width } = pageRef.current.getBoundingClientRect();
 
@@ -35,7 +33,7 @@ export default function HomePage(): JSX.Element {
       <p>
         In 1966, <windups.Pause ms={BEAT_MS} />
         three years before the ARPAnet delivered its first packet [1] <windups.Pause ms={BEAT_MS} />
-        and two years before engelbart's mother of all demos [2], <windups.Pause ms={2*BEAT_MS} />
+        and two years before engelbart&apos;s mother of all demos [2], <windups.Pause ms={2*BEAT_MS} />
         a father/daughter duo [3] published a history of the internet in a Swedish sci-fi novel.
       </p>
       <windups.Pause ms={2*BEAT_MS} />
@@ -55,16 +53,16 @@ export default function HomePage(): JSX.Element {
 
       <p>
         Pledge $15 or 15 DAI to join our community,
-        receive a limited "first edition" ebook at release, and more [8].
+        receive a limited &quot;first edition&quot; ebook at release, and more [8].
       </p>
     </WoundUpText>
   </Page>;
 }
 
-const WoundUpText = ({ children, width }) => (
+const WoundUpText = ({ children, width }: React.PropsWithChildren<{ width: number }>) => (
   typeof window === 'undefined'
-    ? <windups.WindupChildren children={children} />
+    ? <windups.WindupChildren>{children}</windups.WindupChildren>
     : <windups.Linebreaker fontStyle={'16px Helvetica Neue'} width={width}>
-      <windups.WindupChildren children={children} />
+      <windups.WindupChildren>{children}</windups.WindupChildren>
     </windups.Linebreaker>
 );
