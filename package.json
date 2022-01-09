@@ -16,19 +16,19 @@
   "dependencies": {
     "ahooks": "^2.7.1",
     "next": "~12.0",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "windups": "^1.1.9"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
     "@types/node": "^14.14.2",
-    "@types/react": "^16.9.53",
+    "@types/react": "^17.0.38",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "eslint": "^7.11.0",
     "eslint-loader": "^4.0.2",
-    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react": "^7.28.0",
     "linaria": "^2.3.1",
     "next-linaria": "^0.11.0",
     "postcss-preset-env": "^6.7.0",
