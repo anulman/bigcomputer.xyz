@@ -19,6 +19,12 @@ const Page = styled.main`
     margin-top: 1rem;
   }
 
+  > ${Avatar} {
+    position: fixed;
+    bottom: calc(1rem + var(--size));
+    right: calc(1rem + var(--size));
+  }
+
   a {
     @apply underline;
 

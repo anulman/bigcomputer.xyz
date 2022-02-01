@@ -40,10 +40,10 @@ export const Avatar = styled.div<{ color?: string; size?: number | string }>`
       transform: rotate(-45deg) scale(1);
     }
     20% {
-      transform: rotate(-45deg) scale(1.25) translateX(5%) translateY(5%);
+      transform: rotate(-45deg) scale(1.25);
     }
     40% {
-      transform: rotate(-45deg) scale(1.5) translateX(9%) translateY(10%);
+      transform: rotate(-45deg) scale(1.5);
     }
   }
 `;
