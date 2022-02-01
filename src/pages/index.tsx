@@ -18,6 +18,14 @@ const Page = styled.main`
   > p + p {
     margin-top: 1rem;
   }
+
+  a {
+    @apply underline;
+
+    &:hover {
+      @apply text-white;
+    }
+  }
 `;
 
 export default function HomePage(): JSX.Element {
@@ -54,8 +62,8 @@ export default function HomePage(): JSX.Element {
     </Paragraph>}
 
     {currentParagraph >= 3 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
-      Pledge $15 or 15 DAI to join our community,
-      receive a limited &quot;first edition&quot; ebook at release, and more [8].
+      <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Click here to join our community</a>
+      {' '}and help us make the Big Computer&apos;s heart beat once more [8].
     </Paragraph>}
   </Page>;
 }
