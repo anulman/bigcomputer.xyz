@@ -11,18 +11,8 @@ export default class MyDocument extends Document {
         <body>
           <Main />
           <NextScript />
-          <JamScript />
         </body>
       </Html>
     );
   }
 }
-
-const JamScript = (): JSX.Element => process.env.NODE_ENV === 'production'
-  ? (
-    <>
-      <script src="https://jam.dev/jam.js"></script>
-      <script dangerouslySetInnerHTML={{ __html: 'Jam.init(\'untrue-cephalopod-7517\')' }} />
-    </>
-  )
-  : null;
