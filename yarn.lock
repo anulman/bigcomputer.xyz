@@ -2454,6 +2454,7 @@ __metadata:
     postcss-preset-env: ^6.7.0
     react: ^17.0.2
     react-dom: ^17.0.2
+    simplex-noise: ^3.0.1
     tailwindcss: ^1.9.6
     three: ^0.137.5
     typescript: ^4.5.4
@@ -6842,6 +6843,13 @@ __metadata:
   dependencies:
     is-arrayish: ^0.3.1
   checksum: a7f3f2ab5c76c4472d5c578df892e857323e452d9f392e1b5cf74b74db66e6294a1e1b8b390b519fa1b96b5b613f2a37db6cffef52c3f1f8f3c5ea64eb2d54c0
+  languageName: node
+  linkType: hard
+
+"simplex-noise@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "simplex-noise@npm:3.0.1"
+  checksum: 9691c295d020b224560b2a6429213bfbfcbb649946e0b325beb6ab4e7ca341a99ac021033d87d69c0df1428f07c2e727773d0cdbd759ca1f525de874f013c741
   languageName: node
   linkType: hard
 
