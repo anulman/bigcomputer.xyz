@@ -4,6 +4,7 @@ import * as windups from 'windups';
 // todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
+import * as Text from '@src/parts/Text';
 
 const BEAT_MS = 300;
 const Page = styled.main`
@@ -17,12 +18,6 @@ const Page = styled.main`
 
   > p + p {
     margin-top: 1rem;
-  }
-
-  > ${Avatar} {
-    position: fixed;
-    bottom: calc(1rem + var(--size));
-    right: calc(1rem + var(--size));
   }
 
   a {
@@ -45,7 +40,7 @@ export default function HomePage(): JSX.Element {
   React.useEffect(() => { pauseThenMoveToNextParagraph(); }, []);
 
   return <Page>
-    <Avatar size={25} />
+    <Avatar size={100} />
 
     {currentParagraph >= 0 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
       In 1966, <windups.Pause ms={BEAT_MS} />

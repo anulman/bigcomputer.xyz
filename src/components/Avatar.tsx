@@ -1,49 +1,175 @@
-import { styled } from 'linaria/react';
+import * as React from 'react';
+import * as THREE from 'three';
+import SimplexNoise from 'simplex-noise';
 
-export const Avatar = styled.div<{ color?: string; size?: number | string }>`
-  @apply relative;
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler';
 
-  --color: ${({ color }) => color ?? 'red'};
-  --size: ${({ size }) =>
-    typeof size === 'string' ? size : `${size ?? '50'}px`};
+type Vector3WithNormal = THREE.Vector3 & { normal?: THREE.Vector3 };
+type Fur = { points: Vector3WithNormal[]; mesh: THREE.LineSegments };
 
-  animation: heartbeat 1s infinite;
-  background-color: var(--color);
-  height: var(--size);
-  width: var(--size);
-  transform: rotate(-45deg);
+// Heart by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/8RA5hHU5gHK)
 
-  &::before,
-  &::after {
-    @apply absolute;
+const DEFAULT_COLOR = 'crimson';
+const HAIR_LENGTH = 1.2;
+const HEARTBEAT_LENGTH = 100;
+const BEAT_SIZE = 1.0015;
 
-    content: "";
-    background-color: var(--color);
-    border-radius: 50%;
+type AnimationContext = {
+  renderer: THREE.Renderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  fur: Fur;
+  skin: THREE.Mesh;
+};
 
-    height: var(--size);
-    width: var(--size);
+// todo - better beating timing (i.e. not linear)
+// todo - better colour, sizing config
+export const Avatar = ({ color = DEFAULT_COLOR }: { color?: string; size?: number }) => {
+  const elementRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+    const loader = new GLTFLoader();
+    const observer = new ResizeObserver(onResize.bind(null, camera, renderer));
+
+    observer.observe(document.documentElement);
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.position.z = 200;
+
+    elementRef.current.replaceChildren(renderer.domElement);
+
+    new OrbitControls(camera, renderer.domElement);
+
+    loader.load('/assets/models/heart.glb', (data) => {
+      console.info('Heart model by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/8RA5hHU5gHK)');
+
+      const skin = data.scene.children[0] as THREE.Mesh;
+      const fur = setupFur(skin, { color });
+
+      skin.material = new THREE.MeshBasicMaterial({ color: 'black' });
+
+      scene.add(skin);
+      scene.add(fur.mesh);
+
+      requestAnimationFrame(animate.bind(null, { renderer, scene, camera, fur, skin }));
+    });
+
+    return () => {
+      observer.disconnect();
+      renderer.domElement.remove();
+    };
+  }, [elementRef]);
+
+  return <div ref={elementRef} />;
+};
+
+const setupFur = (skin: THREE.Mesh, options: { color?: string } = {}): Fur => {
+  const fur: Vector3WithNormal[] = [];
+  const vector = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  const sampler = new MeshSurfaceSampler(skin).build();
+
+  // n.b. these are all 1px thick; it is not easy to make them thicker
+  const furGeometry = new THREE.BufferGeometry();
+  const furMaterial = new THREE.LineBasicMaterial({ color: options.color ?? DEFAULT_COLOR });
+  const furMesh = new THREE.LineSegments(furGeometry, furMaterial);
+
+  for (let i=0; i < 50000; i++) {
+    // sample new data
+    sampler.sample(vector, normal);
+
+    const end: THREE.Vector3 & { normal?: THREE.Vector3 } = normal.clone();
+    end.normal = vector.clone();
+
+    // draw a line for the vector along the normal
+    fur.push(vector.clone());
+    end.multiplyScalar(HAIR_LENGTH).add(vector);
+    fur.push(end);
   }
 
-  &::before {
-    top: calc(var(--size) / -2);
-    left: 0;
-  }
+  furGeometry.setFromPoints(fur);
 
-  &::after {
-    left: calc(var(--size) / 2);
-    top: 0;
-  }
+  return { points: fur, mesh: furMesh };
+};
 
-  @keyframes heartbeat {
-    0% {
-      transform: rotate(-45deg) scale(1);
+const simplex = new SimplexNoise();
+const updateFur = (fur: Fur, frame: number, time: number) => {
+  for (let i=0; i < fur.points.length; i+=2) {
+    const p1 = fur.points[i];
+    const p2 = fur.points[i+1];
+    const furMeshPositions = fur.mesh.geometry.attributes.position.array as Array<number>;
+
+    const angle = simplex.noise4D(p1.x, p1.y, p1.z, time * 0.001);
+    const vector = p2.clone();
+
+    vector.cross(p2.normal);
+
+    const x = Math.cos(angle);
+    const y = Math.sin(angle);
+    const intensity = 0.25;
+    const radius1 = vector.multiplyScalar(x * intensity);
+    const radius2 = vector.multiplyScalar(y * intensity);
+
+    for (const p of [p1, p2]) {
+      p.x = p.x * beatFrameMultiplier(frame);
+      p.y = p.y * beatFrameMultiplier(frame);
+      p.z = p.z * beatFrameMultiplier(frame);
     }
-    20% {
-      transform: rotate(-45deg) scale(1.25);
-    }
-    40% {
-      transform: rotate(-45deg) scale(1.5);
-    }
+
+    // edit base x, y, z values
+    furMeshPositions[(i) * 3] = p1.x;
+    furMeshPositions[(i) * 3 + 1] = p1.y;
+    furMeshPositions[(i) * 3 + 2] = p1.z;
+
+    // edit tip x, y, z values
+    furMeshPositions[(i+1) * 3] = p2.x + radius1.x + radius2.x;
+    furMeshPositions[(i+1) * 3 + 1] = p2.y + radius1.y + radius2.y;
+    furMeshPositions[(i+1) * 3 + 2] = p2.z + radius1.z + radius2.z;
   }
-`;
+
+  fur.mesh.geometry.attributes.position.needsUpdate = true;
+};
+
+const updateSkin = (skin: THREE.Mesh, frame: number) => {
+  const skinPositions = skin.geometry.attributes.position.array as Array<number>;
+
+  for (let i = 0; i < skin.geometry.attributes.position.array.length; i += 1) {
+    skinPositions[i] = skinPositions[i] * beatFrameMultiplier(frame);
+  }
+
+  skin.geometry.attributes.position.needsUpdate = true;
+};
+
+const beatFrameMultiplier = (frame: number) => {
+  if (frame < Math.ceil(HEARTBEAT_LENGTH / 2) + 1) {
+    return BEAT_SIZE;
+  } else {
+    return 1 / BEAT_SIZE;
+  }
+};
+
+const animate = (context: AnimationContext, frame = 0, time: number) => {
+  if (!context.renderer?.domElement.isConnected) {
+    return;
+  }
+
+  updateSkin(context.skin, frame);
+  updateFur(context.fur, frame, time);
+  context.renderer.render(context.scene, context.camera);
+
+  // resets at HEARTBEAT_LENGTH;
+  const nextFrame = frame < HEARTBEAT_LENGTH ? frame + 1 : 0;
+  requestAnimationFrame(animate.bind(null, context, nextFrame));
+};
+
+const onResize = (camera: THREE.PerspectiveCamera, renderer: THREE.Renderer) => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
