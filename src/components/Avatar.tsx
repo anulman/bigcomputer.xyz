@@ -13,8 +13,7 @@ type Fur = { points: Vector3WithNormal[]; mesh: THREE.LineSegments };
 
 const DEFAULT_COLOR = 'crimson';
 const HAIR_LENGTH = 1.2;
-const HEARTBEAT_LENGTH = 100;
-const BEAT_SIZE = 1.0015;
+const HEARTBEAT_LENGTH = 200;
 
 type AnimationContext = {
   renderer: THREE.Renderer;
@@ -24,7 +23,6 @@ type AnimationContext = {
   skin: THREE.Mesh;
 };
 
-// todo - better beating timing (i.e. not linear)
 // todo - better colour, sizing config
 export const Avatar = ({ color = DEFAULT_COLOR }: { color?: string; size?: number }) => {
   const elementRef = React.useRef<HTMLDivElement>(null);
@@ -147,11 +145,48 @@ const updateSkin = (skin: THREE.Mesh, frame: number) => {
 };
 
 const beatFrameMultiplier = (frame: number) => {
-  if (frame < Math.ceil(HEARTBEAT_LENGTH / 2) + 1) {
-    return BEAT_SIZE;
-  } else {
-    return 1 / BEAT_SIZE;
+  // shape roughly adopted from this ecg - https://svgsilh.com/image/1375322.html
+  // todo - less "linear"
+
+  if (frame < 26) {
+    return 1.001;
+  } else if (frame < 51) {
+    return 1 / 1.001;
+  } else if (frame < 76) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25
+    // = 1.0777631377
+    return 1.003;
+  } else if (frame < 101) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25
+    // = 0.9753949557
+    return 1 / 1.004;
+  } else if (frame < 121) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20
+    // = 1.0356169876
+    return 1.003;
+  } else if (frame < 126) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20*(1/1.007)^5
+    // = 1.0001193108
+    return 1 / 1.007;
+  } else if (frame < 151) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20*(1/1.007)^5*1.002^25
+    // = 1.0513440258
+    return 1.002;
+  } else if (frame < 176) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20*(1/1.007)^5*1.002^25*(1/1.003)^25
+    // = 0.975487089
+    return 1 / 1.003;
+  } else if (frame < 188) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20*(1/1.007)^5*1.002^25*(1/1.003)^25*1.003^12
+    // = 1.0111898972
+    return 1.003;
+  } else if (frame < 200) {
+    // 1*1.001^25*(1/1.001)^25*1.003^25*(1/1.004)^25*1.003^20*(1/1.007)^5*1.002^25*(1/1.003)^25*1.003^12*(1/1.001)^13
+    // = 1.0111898972
+    return 1/1.001;
   }
+
+  return 1;
 };
 
 const animate = (context: AnimationContext, frame = 0, time: number) => {
