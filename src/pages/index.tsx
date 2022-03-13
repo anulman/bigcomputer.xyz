@@ -12,7 +12,7 @@ const Page = styled.main`
   @apply mx-auto;
 
   font-size: 1rem;
-  padding: 3rem 0;
+  padding: 3rem 0.5rem;
   line-height: 1.3;
 
   > canvas {
@@ -22,8 +22,8 @@ const Page = styled.main`
   }
 
   > p {
-    @apply mx-auto;
-    width: 72ch;
+    @apply w-full mx-auto;
+    max-width: 72ch;
 
     + p {
       margin-top: 1rem;
