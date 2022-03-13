@@ -17,6 +17,7 @@ const NUM_HAIRS = 40000;
 const HAIR_LENGTH = 1.2;
 const FUR_INTENSITY = 0.3;
 const HEARTBEAT_LENGTH = 200;
+const MIN_MILLIS_BETWEEN_FRAMES = 1000 / 60; // aka "60 fps"
 
 type AnimationContext = {
   renderer: THREE.Renderer;
@@ -200,11 +201,19 @@ const beatFrameMultiplier = (frame: number) => {
   return 1;
 };
 
+let lastAnimationTime: number;
 const animate = (context: AnimationContext, frame = 0, time: number) => {
   if (!context.renderer?.domElement.isConnected) {
     return;
   }
 
+  if (lastAnimationTime && Math.floor(time - lastAnimationTime) <= MIN_MILLIS_BETWEEN_FRAMES) {
+    // raf is running > 60fps; let's throttle ourselves
+    requestAnimationFrame(animate.bind(null, context, frame));
+    return;
+  }
+
+  lastAnimationTime = time;
   updateSkin(context.skin, frame);
   updateFur(context.fur, frame, time);
   context.renderer.render(context.scene, context.camera);
