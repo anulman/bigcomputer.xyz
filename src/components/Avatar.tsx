@@ -26,10 +26,11 @@ type AnimationContext = {
   skin: THREE.Mesh;
 };
 
-// todo - better colour, sizing config
-export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: { color?: string; size?: number }) => {
-  const elementRef = React.useRef<HTMLDivElement>(null);
+type Props = { color?: string; size?: number };
 
+// todo - better colour, sizing config
+export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: Props) => {
+  const canvasRef = React.useRef<HTMLCanvasElement>();
   const rendererRef = React.useRef<THREE.WebGLRenderer>();
 
   React.useEffect(() => {
@@ -39,7 +40,7 @@ export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: { color?:
   React.useEffect(() => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 
     rendererRef.current = renderer;
 
@@ -50,7 +51,8 @@ export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: { color?:
     camera.position.y = -60;
     camera.position.z = 150;
 
-    elementRef.current.replaceChildren(renderer.domElement);
+    canvasRef.current.replaceWith(renderer.domElement);
+    canvasRef.current = renderer.domElement;
 
     new OrbitControls(camera, renderer.domElement);
 
@@ -71,9 +73,9 @@ export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: { color?:
     return () => {
       renderer.domElement.remove();
     };
-  }, [elementRef]);
+  }, [canvasRef]);
 
-  return <div ref={elementRef} />;
+  return <canvas ref={canvasRef} />;
 };
 
 const setupFur = (skin: THREE.Mesh, options: { color?: string } = {}): Fur => {

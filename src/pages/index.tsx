@@ -4,20 +4,30 @@ import * as windups from 'windups';
 // todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
-import * as Text from '@src/parts/Text';
 
 const BEAT_MS = 300;
 const Page = styled.main`
-  @apply mx-auto relative;
+  @apply min-h-screen min-w-full;
+  @apply relative z-0;
+  @apply mx-auto;
 
   font-size: 1rem;
-  max-width: 72ch;
-  width: 100%;
   padding: 3rem 0;
   line-height: 1.3;
 
-  > p + p {
-    margin-top: 1rem;
+  > canvas {
+    @apply absolute bottom-0 right-0;
+
+    z-index: -1;
+  }
+
+  > p {
+    @apply mx-auto;
+    width: 72ch;
+
+    + p {
+      margin-top: 1rem;
+    }
   }
 
   a {
@@ -26,14 +36,6 @@ const Page = styled.main`
     &:hover {
       @apply text-white;
     }
-  }
-
-  > div:first-child {
-    @apply fixed bottom-0 right-0;
-  }
-
-  > :not(:first-child) {
-    z-index: 1;
   }
 `;
 
@@ -50,7 +52,9 @@ export default function HomePage(): JSX.Element {
 
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
-      setAvatarSize(Math.max(300, Math.floor(window.innerHeight * 0.75)));
+      const maxWindowSize = Math.min(window.innerWidth, window.innerHeight * 0.9);
+
+      setAvatarSize(Math.max(300, maxWindowSize));
     });
 
     observer.observe(document.body);
