@@ -8,7 +8,7 @@ import * as Text from '@src/parts/Text';
 
 const BEAT_MS = 300;
 const Page = styled.main`
-  @apply mx-auto;
+  @apply mx-auto relative;
 
   font-size: 1rem;
   max-width: 72ch;
@@ -27,20 +27,41 @@ const Page = styled.main`
       @apply text-white;
     }
   }
+
+  > div:first-child {
+    @apply fixed bottom-0 right-0;
+  }
+
+  > :not(:first-child) {
+    z-index: 1;
+  }
 `;
+
+const MIN_AVATAR_SIZE = 300;
 
 export default function HomePage(): JSX.Element {
   // todo - enum?
+  const [avatarSize, setAvatarSize] = React.useState(MIN_AVATAR_SIZE);
   const [currentParagraph, setCurrentParagraph] = React.useState(-1);
   const pauseThenMoveToNextParagraph = React.useCallback(
     () => setTimeout(() => setCurrentParagraph(currentParagraph + 1), 3 * BEAT_MS),
     [currentParagraph],
   );
 
+  React.useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      setAvatarSize(Math.max(300, Math.floor(window.innerHeight * 0.75)));
+    });
+
+    observer.observe(document.body);
+
+    return () => observer.disconnect();
+  }, []);
+
   React.useEffect(() => { pauseThenMoveToNextParagraph(); }, []);
 
   return <Page>
-    <Avatar size={100} />
+    <Avatar size={avatarSize} />
 
     {currentParagraph >= 0 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
       In 1966, <windups.Pause ms={BEAT_MS} />

@@ -12,7 +12,10 @@ type Fur = { points: Vector3WithNormal[]; mesh: THREE.LineSegments };
 // Heart by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/8RA5hHU5gHK)
 
 const DEFAULT_COLOR = 'crimson';
+const DEFAULT_SIZE = 100;
+const NUM_HAIRS = 40000;
 const HAIR_LENGTH = 1.2;
+const FUR_INTENSITY = 0.3;
 const HEARTBEAT_LENGTH = 200;
 
 type AnimationContext = {
@@ -24,21 +27,28 @@ type AnimationContext = {
 };
 
 // todo - better colour, sizing config
-export const Avatar = ({ color = DEFAULT_COLOR }: { color?: string; size?: number }) => {
+export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: { color?: string; size?: number }) => {
   const elementRef = React.useRef<HTMLDivElement>(null);
+
+  const rendererRef = React.useRef<THREE.WebGLRenderer>();
+
+  React.useEffect(() => {
+    rendererRef.current?.setSize(size, size);
+  }, [rendererRef, size]);
 
   React.useEffect(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
 
+    rendererRef.current = renderer;
+
     const loader = new GLTFLoader();
-    const observer = new ResizeObserver(onResize.bind(null, camera, renderer));
 
-    observer.observe(document.documentElement);
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.position.z = 200;
+    renderer.setSize(size, size);
+    camera.position.x = 60;
+    camera.position.y = -60;
+    camera.position.z = 150;
 
     elementRef.current.replaceChildren(renderer.domElement);
 
@@ -59,7 +69,6 @@ export const Avatar = ({ color = DEFAULT_COLOR }: { color?: string; size?: numbe
     });
 
     return () => {
-      observer.disconnect();
       renderer.domElement.remove();
     };
   }, [elementRef]);
@@ -78,7 +87,7 @@ const setupFur = (skin: THREE.Mesh, options: { color?: string } = {}): Fur => {
   const furMaterial = new THREE.LineBasicMaterial({ color: options.color ?? DEFAULT_COLOR });
   const furMesh = new THREE.LineSegments(furGeometry, furMaterial);
 
-  for (let i=0; i < 50000; i++) {
+  for (let i=0; i < NUM_HAIRS; i++) {
     // sample new data
     sampler.sample(vector, normal);
 
@@ -110,7 +119,7 @@ const updateFur = (fur: Fur, frame: number, time: number) => {
 
     const x = Math.cos(angle);
     const y = Math.sin(angle);
-    const intensity = 0.25;
+    const intensity = FUR_INTENSITY;
     const radius1 = vector.multiplyScalar(x * intensity);
     const radius2 = vector.multiplyScalar(y * intensity);
 
@@ -201,10 +210,4 @@ const animate = (context: AnimationContext, frame = 0, time: number) => {
   // resets at HEARTBEAT_LENGTH;
   const nextFrame = frame < HEARTBEAT_LENGTH ? frame + 1 : 0;
   requestAnimationFrame(animate.bind(null, context, nextFrame));
-};
-
-const onResize = (camera: THREE.PerspectiveCamera, renderer: THREE.Renderer) => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
 };
