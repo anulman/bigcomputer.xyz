@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
-import * as windups from 'windups';
+import * as windups from '@anulman/windups';
 // todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
+import * as Footnote from '@src/components/Footnote';
 
 const BEAT_MS = 300;
 const Page = styled.main`
@@ -42,13 +43,11 @@ const Page = styled.main`
 const MIN_AVATAR_SIZE = 300;
 
 export default function HomePage(): JSX.Element {
-  // todo - enum?
   const [avatarSize, setAvatarSize] = React.useState(MIN_AVATAR_SIZE);
-  const [currentParagraph, setCurrentParagraph] = React.useState(-1);
-  const pauseThenMoveToNextParagraph = React.useCallback(
-    () => setTimeout(() => setCurrentParagraph(currentParagraph + 1), 3 * BEAT_MS),
-    [currentParagraph],
-  );
+  const [isShowingFootnote, setIsShowingFootnote] = React.useState(false);
+
+  const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
+  const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
 
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
@@ -62,42 +61,38 @@ export default function HomePage(): JSX.Element {
     return () => observer.disconnect();
   }, []);
 
-  React.useEffect(() => { pauseThenMoveToNextParagraph(); }, []);
-
   return <Page>
     <Avatar size={avatarSize} />
+    <Footnote.Container onShow={onShowFootnote} onHide={onHideFootnote}>
+      <windups.WindupChildren isPaused={isShowingFootnote}>
+        <p>
+        In 1966, <windups.Pause ms={BEAT_MS} />
+        three years before the ARPAnet delivered its first packet <Footnote.Reference value="1" /> <windups.Pause ms={2 * BEAT_MS} />
+        and two years before engelbart&apos;s mother of all demos <Footnote.Reference value="another" />, <windups.Pause ms={2 * BEAT_MS} />
+        a father/daughter duo <Footnote.Reference value={<><p>im a full paragraph ladedeada</p><ul><li>list item one</li><li>list item two</li><li>list item three</li></ul></>} /> published a history of the internet in a Swedish sci-fi novel.
+        </p>
+        <windups.Pause ms={3 * BEAT_MS} />
 
-    {currentParagraph >= 0 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
-      In 1966, <windups.Pause ms={BEAT_MS} />
-      three years before the ARPAnet delivered its first packet [1] <windups.Pause ms={2 * BEAT_MS} />
-      and two years before engelbart&apos;s mother of all demos [2], <windups.Pause ms={2 * BEAT_MS} />
-      a father/daughter duo [3] published a history of the internet in a Swedish sci-fi novel.
-    </Paragraph>}
+        <p>
+        Tale of the Big Computer was first translated, published, and widely panned in 1968 <Footnote.Reference value="Third footnote" />.
+        It has built a small following over the last 50-odd years for its uncanny prescience;
+        the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
+        but also how that system acts on us <Footnote.Reference value="Third footnote" />.
+        </p>
+        <windups.Pause ms={3 * BEAT_MS} />
 
-    {currentParagraph >= 1 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
-      Tale of the Big Computer was first translated, published, and widely panned in 1968 [4].
-      It has built a small following over the last 50-odd years for its uncanny prescience;
-      the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
-      but also how that system acts on us [5].
-    </Paragraph>}
+        <p>
+        We are publishing a new English edition of this Swedish cult classic.
+        The original books have become quite rare and expensive <Footnote.Reference value="Third footnote" />,
+        and the 1968 translation is both unnecessarily and inaccurately gendered <Footnote.Reference value="Third footnote" />.
+        </p>
+        <windups.Pause ms={3 * BEAT_MS} />
 
-    {currentParagraph >= 2 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
-      We are publishing a new English edition of this Swedish cult classic.
-      The original books have become quite rare and expensive [6],
-      and the 1968 translation is both unnecessarily and inaccurately gendered [7].
-    </Paragraph>}
-
-    {currentParagraph >= 3 && <Paragraph onFinished={pauseThenMoveToNextParagraph}>
-      <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Click here to join our community</a>
-      {' '}and help us make the Big Computer&apos;s heart beat once more [8].
-    </Paragraph>}
+        <p>
+          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Click here to join our community</a>
+          {' '}and help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value="Third footnote" />.
+        </p>
+      </windups.WindupChildren>
+    </Footnote.Container>
   </Page>;
 }
-
-const Paragraph = ({ children, onFinished }: React.PropsWithChildren<{onFinished: () => unknown}>): JSX.Element => (
-  <p>
-    <windups.WindupChildren onFinished={onFinished}>
-      {children}
-    </windups.WindupChildren>
-  </p>
-);
