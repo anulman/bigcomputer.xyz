@@ -1,5 +1,6 @@
 .next
 .linaria-cache
+.envrc
 
 node_modules
 out
