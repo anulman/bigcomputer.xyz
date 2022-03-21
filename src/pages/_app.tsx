@@ -4,8 +4,8 @@ import { configResponsive } from 'ahooks';
 
 import tailwindConfig from '../../tailwind.config';
 
-import '@src/css/app.css';
 import '@src/css/tailwind.css';
+import '@src/css/app.css';
 
 export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
   useEffect(() => {
