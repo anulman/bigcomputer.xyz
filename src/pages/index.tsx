@@ -129,8 +129,8 @@ const Footnotes = {
   </>,
   reviews: <>
     <p>The book is <em>dry</em>: there are no characters or &quot;plot&quot;; it&apos;s more of a history tome. Also, the back half is mostly tropey space malarkey.</p>
-    <p>&gt; &quot;<em>The Tale of the Big Computer</em> [...] is a &ldquo;future history&rdquo; of the evolution of life on earth through the age of humans and the &ldquo;Symbiotic Age&rdquo; to the beginning of the true Computer Age. It may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, The Magazine of Fantasy and Science Fiction, June 1968</p>
-    <p>&gt; &quot;This deadpan book-length extrapolation [...] chronicles in matter-of-fact detail the stages through which the Computers had to pass before they attained their self-sufficiency and rightful domination of the world. Needless to say, if you look around you, you can see the first chapters of the Big Computer’s tale taking form.&quot;<br />&mdash;P Schuyler Miller, Analog Science Fiction/Science Fact, May 1969</p>
+    <p>&gt; &quot;This deadpan book-length extrapolation [...] chronicles in matter-of-fact detail the stages through which the Computers had to pass before they attained their [...] rightful domination of the world. [...] if you look around you, you can see the first chapters of the Big Computer’s tale taking form.&quot;<br />&mdash;P Schuyler Miller, Analog Science Fiction/Science Fact, May 1969</p>
+    <p>&gt; &quot;<em>The Tale of the Big Computer</em> [...]  may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, The Magazine of Fantasy and Science Fiction, June 1968</p>
   </>,
   prescience: <>
     <p>For one example, the authors not only describe humans watching videos on computers we wear on our wrists; they grapple with how we will produce more user-generated content than any human can watch, and show the humans relinquishing agency and letting the system of distributed computers decide which videos they want to watch&mdash;personalized to each individual, of course.</p>
