@@ -16,6 +16,7 @@
   "dependencies": {
     "@anulman/windups": "^1.2.0",
     "ahooks": "^3.1.9",
+    "fathom-client": "^3.4.1",
     "lodash": "^4.17.21",
     "next": "12.0.4",
     "observable-hooks": "^4.2.0",
