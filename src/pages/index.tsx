@@ -133,13 +133,14 @@ const Footnotes = {
     <p>&gt; &quot;<em>The Tale of the Big Computer</em> [...]  may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, The Magazine of Fantasy and Science Fiction, June 1968</p>
   </>,
   prescience: <>
-    <p>For one example, the authors not only describe humans watching videos on computers we wear on our wrists; they grapple with how we will produce more user-generated content than any human can watch, and show the humans relinquishing agency and letting the system of distributed computers decide which videos they want to watch&mdash;personalized to each individual, of course.</p>
+    <p>For example, the authors not only describe humans watching videos on computers we wear on our wrists; they accurately describe the ramifications we&apos;re living through:</p>
+    <p>How we will produce more user-generated content than any one human can watch; how we will relinquish agency and let distributed computers decide which videos we want to watch; and how these recommendations will be personalized to each individual, of course.</p>
   </>,
   rare: <>
-    <p>I know of only one English copy currently for sale online, an American first edition in near-fine condition selling for $1200 <a href="https://www.amazon.com/Tale-Big-Computer-Olaf-Johannesson/dp/B000GQU38W" target="_blank" rel="noreferrer">on Amazon</a>.</p>
+    <p>There seems to be only one English copy currently for sale online: an American first edition in near-fine condition selling for $1200 <a href="https://www.amazon.com/Tale-Big-Computer-Olaf-Johannesson/dp/B000GQU38W" target="_blank" rel="noreferrer">on Amazon</a>.</p>
   </>,
   community: <>
     <p>We are especially looking for 3D / motion artists; book designers; software engineers; and sculptural artists to help us make uniquely beautiful digital and physical editions of this special book.</p>
-    <p>If that describes you, please do get in touch!</p>
+    <p>If this describes you, please do get in touch!</p>
   </>
 };
