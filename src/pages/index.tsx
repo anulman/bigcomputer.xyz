@@ -83,29 +83,29 @@ export default function HomePage(): JSX.Element {
         <p>
           In 1966, <windups.Pause ms={BEAT_MS} />
           three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} /> <windups.Pause ms={2 * BEAT_MS} />
-          and two years before engelbart&apos;s mother of all demos <Footnote.Reference value={<p>another</p>} />, <windups.Pause ms={2 * BEAT_MS} />
-          a father/daughter duo <Footnote.Reference value={<><p>im a full paragraph ladedeada</p><ul><li>list item one</li><li>list item two</li><li>list item three</li></ul></>} /> published a history of the internet in a Swedish sci-fi novel.
+          and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />, <windups.Pause ms={2 * BEAT_MS} />
+          a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
         </p>
         <windups.Pause ms={3 * BEAT_MS} />
 
         <p>
-          Tale of the Big Computer was first translated, published, and widely panned in 1968 <Footnote.Reference value="Third footnote" />.
+          Tale of the Big Computer was first translated, published, and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.
           It has built a small following over the last 50-odd years for its uncanny prescience;
           the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
-          but also how that system acts on us <Footnote.Reference value="Third footnote" />.
+          but also how that system acts on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
         <windups.Pause ms={3 * BEAT_MS} />
 
         <p>
           We are publishing a new English edition of this Swedish cult classic.
-          The original books have become quite rare and expensive <Footnote.Reference value="Third footnote" />,
-          and the 1968 translation is both unnecessarily and inaccurately gendered <Footnote.Reference value="Third footnote" />.
+          The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,
+          and the 1968 translation is both unnecessarily and inaccurately gendered.
         </p>
         <windups.Pause ms={3 * BEAT_MS} />
 
         <p>
-          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Click here to join our community</a>
-          {' '}and help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value="Third footnote" />.
+          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Please join our Discord community</a>
+          {' '}to help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
         </p>
       </windups.WindupChildren>
     </Footnote.Container>
@@ -117,5 +117,29 @@ const Footnotes = {
     <p>The ARPAnet was the military research project that preceded web1 (aka &quot;the internet&quot;).</p>
     <p>A team of defense contractors at Bolt Beranek & Newman designed and deployed the first long-distance multi-node packet-switching network to connect research teams at various universities with each other and the Department of Defense.</p>
     <p>The first sites came online in 1969; in the ensuing years the networked researchers slowly converged on many governance structures and standards—including RFCs, email and FTP—that continue to power the global internet to this day.</p>
+  </>,
+  engelbart: <>
+    <p>Douglas Engelbart was a pioneering computer researcher focused on human-computer interaction.</p>
+    <p>In 1968 he demoed his new &quot;oN-Line System&quot; (NLS), featuring several fundamental innovations we now consider table stakes for computing devices: windows; hypertext (links); the computer mouse; word processors; revision control; real-time document collaboration over a network; and much more.</p>
+    <p>We will soon embed the video here; for now you can <a href="https://www.youtube.com/watch?v=yJDv-zdhzMY" target="_blank" rel="noreferrer">watch it on YouTube</a> (1h40m).</p>
+  </>,
+  alfvens: <>
+    <p>The father is Hannes Alfvén who, four years after publication (in 1970) will win the Nobel Prize in Physics for his work on magnetohydrodynamics; specifically his discovery of &quot;Alfvén waves&quot;, which explain why stars&apos; outer atmospheres are several orders of magnitude hotter than their surfaces.</p>
+    <p>His daughter Inger is an acclaimed author and playwright; she had recently published <em>Vinbergssnäcka</em>, &quot;a refreshing and joyful personal portrait of a girl from the sixties&quot;. She will publish her breakthrough novel, <em>S/Y Glädjen</em>, in 1979.</p>
+  </>,
+  reviews: <>
+    <p>The book is <em>dry</em>: there are no characters or &quot;plot&quot;; it&apos;s more of a history tome. Also, the back half is mostly tropey space malarkey.</p>
+    <p>&gt; &quot;<em>The Tale of the Big Computer</em> [...] is a &ldquo;future history&rdquo; of the evolution of life on earth through the age of humans and the &ldquo;Symbiotic Age&rdquo; to the beginning of the true Computer Age. It may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, The Magazine of Fantasy and Science Fiction, June 1968</p>
+    <p>&gt; &quot;This deadpan book-length extrapolation [...] chronicles in matter-of-fact detail the stages through which the Computers had to pass before they attained their self-sufficiency and rightful domination of the world. Needless to say, if you look around you, you can see the first chapters of the Big Computer’s tale taking form.&quot;<br />&mdash;P Schuyler Miller, Analog Science Fiction/Science Fact, May 1969</p>
+  </>,
+  prescience: <>
+    <p>For one example, the authors not only describe humans watching videos on computers we wear on our wrists; they grapple with how we will produce more user-generated content than any human can watch, and show the humans relinquishing agency and letting the system of distributed computers decide which videos they want to watch&mdash;personalized to each individual, of course.</p>
+  </>,
+  rare: <>
+    <p>I know of only one English copy currently for sale online, an American first edition in near-fine condition selling for $1200 <a href="https://www.amazon.com/Tale-Big-Computer-Olaf-Johannesson/dp/B000GQU38W" target="_blank" rel="noreferrer">on Amazon</a>.</p>
+  </>,
+  community: <>
+    <p>We are especially looking for 3D / motion artists; book designers; software engineers; and sculptural artists to help us make uniquely beautiful digital and physical editions of this special book.</p>
+    <p>If that describes you, please do get in touch!</p>
   </>
 };
