@@ -9,6 +9,7 @@ import '@src/css/app.css';
 
 export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
   useEffect(() => {
+    console.info('This website is open source! See how it\'s made at https://github.com/anulman/bigcomputer.xyz');
     configResponsive(mapTailwindConfigToResponsiveConfig(tailwindConfig));
   }, []);
 
