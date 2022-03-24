@@ -14,6 +14,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@anulman/windups@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@anulman/windups@npm:1.2.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40anulman%2Fwindups%2F1.2.0%2F3998d86d7e61dd1c85b6bd809f15a91f5d5a472a1855daaad2e19bd74696291e"
+  dependencies:
+    break-styled-lines: ^1.2.2
+  peerDependencies:
+    react: ">16.8.0"
+  checksum: caa1e34c1d3101e062da2df5d6838b018b9b55771d76b52df35d10ef5944cb4b6ee32e3e497fe77b7a2d4816f529a5431dd44cd20ffbf797caea604e4c4847e5
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:7.12.11":
   version: 7.12.11
   resolution: "@babel/code-frame@npm:7.12.11"
@@ -2431,6 +2442,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "big-computer@workspace:."
   dependencies:
+    "@anulman/windups": ^1.2.0
     "@babel/core": ^7.17.2
     "@babel/plugin-transform-runtime": ^7.16.10
     "@babel/preset-env": ^7.16.11
@@ -2451,15 +2463,16 @@ __metadata:
     lodash: ^4.17.21
     next: 12.0.4
     next-linaria: ^0.11.0
+    observable-hooks: ^4.2.0
     postcss-preset-env: ^6.7.0
     react: ^17.0.2
     react-dom: ^17.0.2
+    rxjs: ^7.5.5
     simplex-noise: ^3.0.1
     tailwindcss: ^1.9.6
     three: ^0.137.5
     typescript: ^4.5.4
     webpack: ^5.68.0
-    windups: ^1.1.9
   languageName: unknown
   linkType: soft
 
@@ -5513,6 +5526,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"observable-hooks@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "observable-hooks@npm:4.2.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+    rxjs: ">=6.0.0"
+  checksum: 00870249989bf98764a68a504c954c06b12a52bc1f0227160b6cf8017b22b64ddf6746a6d30514a7926040ce024b0fb75c14d675baa0381ffefefe84b0a875d8
+  languageName: node
+  linkType: hard
+
 "once@npm:^1.3.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
@@ -6665,6 +6689,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rxjs@npm:^7.5.5":
+  version: 7.5.5
+  resolution: "rxjs@npm:7.5.5"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: e034f60805210cce756dd2f49664a8108780b117cf5d0e2281506e9e6387f7b4f1532d974a8c8b09314fa7a16dd2f6cff3462072a5789672b5dcb45c4173f3c6
+  languageName: node
+  linkType: hard
+
 "safe-buffer@npm:^5.0.1, safe-buffer@npm:^5.1.0, safe-buffer@npm:^5.1.1, safe-buffer@npm:^5.1.2, safe-buffer@npm:^5.2.0, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
@@ -7365,6 +7398,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.1.0":
+  version: 2.3.1
+  resolution: "tslib@npm:2.3.1"
+  checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
+  languageName: node
+  linkType: hard
+
 "tsutils@npm:^3.21.0":
   version: 3.21.0
   resolution: "tsutils@npm:3.21.0"
@@ -7696,17 +7736,6 @@ __metadata:
   dependencies:
     string-width: ^1.0.2 || 2 || 3 || 4
   checksum: d5fc37cd561f9daee3c80e03b92ed3e84d80dde3365a8767263d03dacfc8fa06b065ffe1df00d8c2a09f731482fcacae745abfbb478d4af36d0a891fad4834d3
-  languageName: node
-  linkType: hard
-
-"windups@npm:^1.1.9":
-  version: 1.1.9
-  resolution: "windups@npm:1.1.9"
-  dependencies:
-    break-styled-lines: ^1.2.2
-  peerDependencies:
-    react: ">16.8.0"
-  checksum: 302b72120899f8919131ffd86c11e1f98f3c9f6b41f56d58230b2cb3475503c4c9c079c90610ca2c9307616930266010b71484f2768ef104845b48215264b36b
   languageName: node
   linkType: hard
 
