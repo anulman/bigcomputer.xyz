@@ -15,6 +15,7 @@ export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
 
   useEffect(() => {
     Fathom.load('IYSQIMIJ', {
+      url: 'https://paul-branch.bigcomputer.xyz/script.js',
       includedDomains: ['bigcomputer.xyz', 'www.bigcomputer.xyz'],
     });
 
