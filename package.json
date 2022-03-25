@@ -14,7 +14,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@anulman/windups": "^1.2.0",
+    "@anulman/windups": "^1.2.1",
     "ahooks": "^3.1.9",
     "fathom-client": "^3.4.1",
     "lodash": "^4.17.21",
