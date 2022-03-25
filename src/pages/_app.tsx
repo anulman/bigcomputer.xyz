@@ -40,6 +40,8 @@ export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
       <meta property="og:image" content="https://bigcomputer.xyz/assets/images/3d-heart.png" key="og:image" />
 
       <meta property="twitter:card" content="summary_large_image" key="twitter:card" />
+
+      <title key="title">Tale of the Big Computer</title>
     </Head>
     <Component {...pageProps} />
   </>;
