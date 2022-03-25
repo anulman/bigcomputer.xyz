@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
 import * as windups from '@anulman/windups';
+import * as Fathom from 'fathom-client';
 // todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
@@ -63,6 +64,7 @@ export default function HomePage(): JSX.Element {
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
+  const onClickedJoinDiscord = React.useCallback(() => Fathom.trackGoal('VCJ8PHAD', 0), []);
 
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
@@ -104,7 +106,7 @@ export default function HomePage(): JSX.Element {
         <windups.Pause ms={3 * BEAT_MS} />
 
         <p>
-          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer">Please join our Discord community</a>
+          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
           {' '}to help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
         </p>
       </windups.WindupChildren>
