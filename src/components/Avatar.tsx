@@ -29,7 +29,6 @@ type AnimationContext = {
 
 type Props = { color?: string; size?: number };
 
-// todo - better colour, sizing config
 export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: Props) => {
   const canvasRef = React.useRef<HTMLCanvasElement>();
   const rendererRef = React.useRef<THREE.WebGLRenderer>();
@@ -68,7 +67,7 @@ export const Avatar = ({ color = DEFAULT_COLOR, size = DEFAULT_SIZE }: Props) =>
       scene.add(skin);
       scene.add(fur.mesh);
 
-      requestAnimationFrame(animate.bind(null, { renderer, scene, camera, fur, skin }));
+      requestAnimationFrame(animate.bind(null, { renderer, scene, camera, fur, skin }, 0));
     });
 
     return () => {
