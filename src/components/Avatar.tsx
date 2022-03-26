@@ -82,6 +82,9 @@ const setupFur = (skin: THREE.Mesh, options: { color?: string } = {}): Fur => {
   const fur: Vector3WithNormal[] = [];
   const vector = new THREE.Vector3();
   const normal = new THREE.Vector3();
+
+  // n.b. this next line suppresses a warning from the `MeshSurfaceSampler` constructor
+  skin.geometry = skin.geometry.toNonIndexed();
   const sampler = new MeshSurfaceSampler(skin).build();
 
   // n.b. these are all 1px thick; it is not easy to make them thicker
