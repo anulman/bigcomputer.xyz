@@ -83,27 +83,26 @@ export default function HomePage(): JSX.Element {
     <Footnote.Container onShow={onShowFootnote} onHide={onHideFootnote}>
       <windups.WindupChildren isPaused={isShowingFootnote}>
         <p>
-          In 1966, <windups.Pause ms={BEAT_MS} />
-          three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} /> <windups.Pause ms={2 * BEAT_MS} />
-          and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />, <windups.Pause ms={2 * BEAT_MS} />
-          a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
+          In 1966,{Beat()} three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} />{Beat(2)}
+          {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{Beat(2)}
+          {' '}a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
         </p>
-        <windups.Pause ms={3 * BEAT_MS} />
+        {Beat(3)}
 
         <p>
-          Tale of the Big Computer was first translated, published, and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.
-          It has built a small following over the last 50-odd years for its uncanny prescience;
-          the authors describe in vivid detail not just how we interface with a global system of interconnected computers,
-          but also how that system acts on us <Footnote.Reference value={Footnotes.prescience} />.
+          Tale of the Big Computer was first translated,{Beat()} published,{Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{Beat(2)}
+          {' '}It has built a small following over the last 50-odd years for its uncanny prescience;{Beat(2)}
+          {' '}the authors describe in vivid detail not just how we interface with a global system of interconnected computers,{Beat()}
+          {' '}but also how that system acts on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
-        <windups.Pause ms={3 * BEAT_MS} />
+        {Beat(3)}
 
         <p>
-          We are publishing a new English edition of this Swedish cult classic.
-          The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,
-          and the 1968 translation is both unnecessarily and inaccurately gendered.
+          We are publishing a new English edition of this Swedish cult classic.{Beat(2)}
+          {' '}The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,{Beat()}
+          {' '}and the 1968 translation is both unnecessarily and inaccurately gendered.
         </p>
-        <windups.Pause ms={3 * BEAT_MS} />
+        {Beat(3)}
 
         <p>
           <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
@@ -114,6 +113,7 @@ export default function HomePage(): JSX.Element {
   </Page>;
 }
 
+const Beat = (numBeats = 1) => <windups.Pause ms={numBeats * BEAT_MS} />;
 const Footnotes = {
   arpanet: <>
     <p>The ARPAnet was the military research project that preceded web1 (aka &quot;the internet&quot;).</p>
