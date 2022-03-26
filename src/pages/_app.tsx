@@ -18,6 +18,8 @@ if (shouldRunAxe) {
     .then(([ReactDOM, { default: axe }]) => axe(React, ReactDOM, 1000, {}));
 }
 
+// TODO - add @types/react-dom
+
 export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
   const router = useRouter();
 
