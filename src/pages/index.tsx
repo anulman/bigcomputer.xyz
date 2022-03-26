@@ -40,12 +40,24 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
     overflow-y: scroll;
   }
 
-  p {
+  p, blockquote {
     @apply w-full mx-auto;
     max-width: 72ch;
 
-    + p {
+    + p, + blockquote {
       margin-top: 1rem;
+    }
+  }
+
+  blockquote {
+    --indent: 1.5rem;
+
+    padding-left: var(--indent);
+
+    &::before {
+      content: '>';
+      margin-left: calc(var(--indent) * -1);
+      margin-right: calc(var(--indent) - 1ch);
     }
   }
 
@@ -133,8 +145,8 @@ const Footnotes = {
   </>,
   reviews: <>
     <p>The book is <em>dry</em>: there are no characters or &quot;plot&quot;; it&apos;s more of a history tome. Also, the back half is mostly tropey space malarkey.</p>
-    <p>&gt; &quot;This deadpan book-length extrapolation [...] chronicles in matter-of-fact detail the stages through which the Computers had to pass before they attained their [...] rightful domination of the world. [...] if you look around you, you can see the first chapters of the Big Computer’s tale taking form.&quot;<br />&mdash;P Schuyler Miller, Analog Science Fiction/Science Fact, May 1969</p>
-    <p>&gt; &quot;<em>The Tale of the Big Computer</em> [...]  may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, The Magazine of Fantasy and Science Fiction, June 1968</p>
+    <blockquote>&quot;This deadpan book-length extrapolation [...] chronicles in matter-of-fact detail the stages through which the Computers had to pass before they attained their [...] rightful domination of the world. [...] if you look around you, you can see the first chapters of the Big Computer’s tale taking form.&quot;<br />&mdash;P Schuyler Miller, <em>Analog Science Fiction/Science Fact</em>, May 1969</blockquote>
+    <blockquote>&quot;<em>The Tale of the Big Computer</em> [...]  may be full of telling points; I wouldn’t know; it was too dull to read.&quot;<br />&mdash;Judith Merril, <em>The Magazine of Fantasy and Science Fiction</em>, June 1968</blockquote>
   </>,
   prescience: <>
     <p>For example, the authors not only describe humans watching videos on computers we wear on our wrists; they accurately describe the ramifications we&apos;re living through:</p>
