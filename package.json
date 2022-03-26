@@ -54,6 +54,9 @@
   },
   "packageManager": "yarn@3.1.1",
   "resolutions": {
+    "ansi-regex": "5.0.1",
+    "color-string": "1.5.5",
+    "minimist": "1.2.6",
     "postcss": "8.4.12"
   }
 }
