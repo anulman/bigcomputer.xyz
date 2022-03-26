@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -9,6 +9,16 @@ import tailwindConfig from '../../tailwind.config';
 
 import '@src/css/tailwind.css';
 import '@src/css/app.css';
+
+const shouldRunAxe = typeof window !== 'undefined' &&
+  process.env.NODE_ENV !== 'production';
+
+if (shouldRunAxe) {
+  Promise.all([import('react-dom'), import('@axe-core/react')])
+    .then(([ReactDOM, { default: axe }]) => axe(React, ReactDOM, 1000, {}));
+}
+
+// TODO - add @types/react-dom
 
 export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
   const router = useRouter();
