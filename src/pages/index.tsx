@@ -104,10 +104,10 @@ export default function HomePage(): JSX.Element {
         {Beat(3)}
 
         <p>
-          Tale of the Big Computer was first translated,{Beat()} published,{Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{Beat(2)}
-          {' '}It has built a small following over the last 50-odd years for its uncanny prescience;{Beat(2)}
-          {' '}the authors describe in vivid detail not just how we interface with a global system of interconnected computers,{Beat()}
-          {' '}but also how that system acts on us <Footnote.Reference value={Footnotes.prescience} />.
+          <em>Tale of the Big Computer</em> was first translated,{Beat()} published,{Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{Beat(2)}
+          {' '}It has since built a small following for its uncanny prescience;{Beat(1.5)}
+          {' '}the authors describe in vivid detail not just how we will interact with a global system of interconnected computers,{Beat()}
+          {' '}but also how that system will act on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
         {Beat(3)}
 
@@ -119,8 +119,9 @@ export default function HomePage(): JSX.Element {
         {Beat(3)}
 
         <p>
-          <a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
-          {' '}to help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
+          We are a group of engineers,{Beat(0.75)} publishers,{Beat(0.75)} translators,{Beat(0.75)} and above all:{Beat()} readers.{Beat(2)}
+          {' '}<a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
+          {' '}and help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
         </p>
       </windups.WindupChildren>
     </Footnote.Container>
