@@ -36,6 +36,8 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
 
     width: var(--width);
     left: calc((100% - var(--width)) / 2);
+    max-height: 85vh;
+    overflow-y: scroll;
   }
 
   p {
