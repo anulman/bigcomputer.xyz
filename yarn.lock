@@ -1667,6 +1667,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@reach/visually-hidden@npm:^0.16.0":
+  version: 0.16.0
+  resolution: "@reach/visually-hidden@npm:0.16.0"
+  dependencies:
+    prop-types: ^15.7.2
+    tslib: ^2.3.0
+  peerDependencies:
+    react: ^16.8.0 || 17.x
+    react-dom: ^16.8.0 || 17.x
+  checksum: e2af8978857640dcf031e1942da397b15dfbddbd3bce2d406e923cd9947f07c8beb18e4ae399f4eea34e8f1390a2a8327a4220113a9682771f86ea32a9778c8b
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@npm:^3.7.0":
   version: 3.7.3
   resolution: "@types/eslint-scope@npm:3.7.3"
@@ -2346,6 +2359,7 @@ __metadata:
     "@babel/plugin-transform-runtime": ^7.16.10
     "@babel/preset-env": ^7.16.11
     "@babel/runtime": ^7.17.2
+    "@reach/visually-hidden": ^0.16.0
     "@types/lodash": ^4.14.178
     "@types/node": ^14.14.2
     "@types/react": ^17.0.38
@@ -5760,7 +5774,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.1.0":
+"tslib@npm:^2.1.0, tslib@npm:^2.3.0":
   version: 2.3.1
   resolution: "tslib@npm:2.3.1"
   checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9

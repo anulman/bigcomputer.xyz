@@ -2,6 +2,7 @@ import * as React from 'react';
 import { styled } from 'linaria/react';
 import * as windups from '@anulman/windups';
 import * as Fathom from 'fathom-client';
+import VisuallyHidden from '@reach/visually-hidden';
 // todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
@@ -95,7 +96,7 @@ export default function HomePage(): JSX.Element {
   return <Page isShowingFootnote={isShowingFootnote}>
     <Avatar size={avatarSize} />
     <Footnote.Container onShow={onShowFootnote} onHide={onHideFootnote}>
-      <windups.WindupChildren isPaused={isShowingFootnote}>
+      <Content isShowingFootnote={isShowingFootnote}>
         <p>
           In 1966,{Beat()} three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} />{Beat(2)}
           {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{Beat(2)}
@@ -123,10 +124,27 @@ export default function HomePage(): JSX.Element {
           {' '}<a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
           {' '}and help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
         </p>
-      </windups.WindupChildren>
+      </Content>
     </Footnote.Container>
   </Page>;
 }
+
+const Content = ({ children, isShowingFootnote = false }: React.PropsWithChildren<{ isShowingFootnote: boolean }>): JSX.Element => {
+  const divRef = React.useRef<HTMLDivElement>();
+
+  React.useEffect(() => {
+    // todo - is this the "best" way to allow re-cycling through links/footnotes?
+    divRef.current.nextElementSibling.querySelectorAll('button, a')
+      .forEach((child) => child.setAttribute('tabindex', '-1'));
+  }, []);
+
+  return <>
+    <div aria-hidden ref={divRef}>
+      <windups.WindupChildren isPaused={isShowingFootnote}>{children}</windups.WindupChildren>
+    </div>
+    <VisuallyHidden>{children}</VisuallyHidden>
+  </>;
+};
 
 const Beat = (numBeats = 1) => <windups.Pause ms={numBeats * BEAT_MS} />;
 const Footnotes = {
