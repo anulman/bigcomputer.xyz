@@ -14,14 +14,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anulman/windups@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@anulman/windups@npm:1.2.1::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40anulman%2Fwindups%2F1.2.1%2F8ad54b8f7fb735be4dfb316d871b0ccf9b439b433cd7fa1fe2d273049bee9df6"
+"@anulman/windups@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@anulman/windups@npm:1.2.2::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40anulman%2Fwindups%2F1.2.2%2F88dc22292d42fdcc317248e301a83550e081793d1bc00fabf44f965c431671ff"
   dependencies:
     break-styled-lines: ^1.2.2
   peerDependencies:
     react: ">16.8.0"
-  checksum: 237432c026e02806c9dbe6a714b99a3b895e72a10df5e958c1c7da51a4ebd3c8a61f0e3debcbb185f87ac3a3be0b274d60216686f509b058e16cf9abba5b5489
+  checksum: 47415b460b3a8fed50c603fe17ae1806013cb66d3e3ecdfe772de042b1fe9de83946f51024d5dab5156d2320604f1047bedb8139d79d40454c5c46e1ed761190
   languageName: node
   linkType: hard
 
@@ -2340,7 +2340,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "big-computer@workspace:."
   dependencies:
-    "@anulman/windups": ^1.2.1
+    "@anulman/windups": ^1.2.2
     "@axe-core/react": ^4.4.2
     "@babel/core": ^7.17.8
     "@babel/plugin-transform-runtime": ^7.16.10
