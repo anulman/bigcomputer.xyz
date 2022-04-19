@@ -38,6 +38,7 @@ export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
 
   useEffect(() => {
     console.info('This website is open source! See how it\'s made at https://github.com/anulman/bigcomputer.xyz');
+    console.info('Heart favicon from Twemoji [CC-BY] (https://creativecommons.org/licenses/by/4.0/) via favicon.io (https://favicon.io/emoji-favicons/red-heart/)');
     configResponsive(mapTailwindConfigToResponsiveConfig(tailwindConfig));
   }, []);
 
