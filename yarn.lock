@@ -14,17 +14,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anulman/windups@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "@anulman/windups@npm:1.2.2::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40anulman%2Fwindups%2F1.2.2%2F88dc22292d42fdcc317248e301a83550e081793d1bc00fabf44f965c431671ff"
-  dependencies:
-    break-styled-lines: ^1.2.2
-  peerDependencies:
-    react: ">16.8.0"
-  checksum: 47415b460b3a8fed50c603fe17ae1806013cb66d3e3ecdfe772de042b1fe9de83946f51024d5dab5156d2320604f1047bedb8139d79d40454c5c46e1ed761190
-  languageName: node
-  linkType: hard
-
 "@axe-core/react@npm:^4.4.2":
   version: 4.4.2
   resolution: "@axe-core/react@npm:4.4.2"
@@ -2353,7 +2342,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "big-computer@workspace:."
   dependencies:
-    "@anulman/windups": ^1.2.2
     "@axe-core/react": ^4.4.2
     "@babel/core": ^7.17.8
     "@babel/plugin-transform-runtime": ^7.16.10
@@ -2389,6 +2377,7 @@ __metadata:
     three: ^0.137.5
     typescript: ^4.5.4
     webpack: ^5.68.0
+    windups: ^1.2.1
   languageName: unknown
   linkType: soft
 
@@ -6001,6 +5990,17 @@ __metadata:
   bin:
     node-which: ./bin/node-which
   checksum: 1a5c563d3c1b52d5f893c8b61afe11abc3bab4afac492e8da5bde69d550de701cf9806235f20a47b5c8fa8a1d6a9135841de2596535e998027a54589000e66d1
+  languageName: node
+  linkType: hard
+
+"windups@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "windups@npm:1.2.1"
+  dependencies:
+    break-styled-lines: ^1.2.2
+  peerDependencies:
+    react: ">16.8.0"
+  checksum: 0f11d42fefb90202d9771f02347e56c42c21ef4864c8b0e0e157de359324f2262db0f9906724db2b37cd6e093b27d4939490a6aeb71db1db12a8fd90213c7076
   languageName: node
   linkType: hard
 

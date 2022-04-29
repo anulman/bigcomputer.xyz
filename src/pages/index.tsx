@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
-import * as windups from '@anulman/windups';
+import * as windups from 'windups';
 import * as Fathom from 'fathom-client';
 import VisuallyHidden from '@reach/visually-hidden';
 // todo - LineBreaker?, CharacterWrappers...
