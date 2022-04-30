@@ -4,18 +4,45 @@ import * as windups from 'windups';
 import VisuallyHidden from '@reach/visually-hidden';
 
 type Props = React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement> & {
-  isPaused: boolean;
+  isPaused?: boolean;
+  isCursorBlinking?: boolean;
+  beatMs?: number;
+  startDelayBeats?: number;
 }>;
 
-const BEAT_MS = 300;
+const DEFAULT_BEAT_MS = 300;
+const DEFAULT_START_DELAY_BEATS = 4;
+// const BEAT_MS = 6;
 
-export const Content = styled<Props>(({ children, isPaused = false, ...props }) => {
+export const Content = styled<Props>(({
+  children,
+  isPaused = false,
+  isCursorBlinking = true,
+  beatMs = DEFAULT_BEAT_MS,
+  startDelayBeats = DEFAULT_START_DELAY_BEATS,
+  ...props
+}) => {
   const divRef = React.useRef<HTMLDivElement>();
   const [hasStarted, setHasStarted] = React.useState(false);
 
+  // delay manually with our own state, because windups seems not to respect
+  // <Pause>:first-child elems
   React.useEffect(() => {
-    setTimeout(() => setHasStarted(true), 4 * BEAT_MS);
-    divRef.current.classList.add('run-animation');
+    // todo - also handle with speed-up
+    setTimeout(() => setHasStarted(true), startDelayBeats * beatMs);
+  }, [startDelayBeats, beatMs]);
+
+  // manage cursor blinking
+  React.useEffect(() => {
+    if (isCursorBlinking) {
+      divRef.current?.classList.add('run-animation');
+    }
+
+    return () => divRef.current?.classList.remove('run-animation');
+  }, [isCursorBlinking]);
+
+  // ensure non-aria keyboard users can't tab through visually hidden elems
+  React.useEffect(() => {
     divRef.current.addEventListener('focusin', () => {
       // if we've focused in here, we're not on a device that ignores `aria-hidden`.
       // this means we can ignore our `<VisuallyHidden>` contents in the tabindex
@@ -25,10 +52,12 @@ export const Content = styled<Props>(({ children, isPaused = false, ...props }) 
   }, []);
 
   const triggerReflow = React.useCallback(() => {
-    divRef.current.classList.remove('run-animation');
-    void divRef.current.offsetWidth;
-    divRef.current.classList.add('run-animation');
-  }, []);
+    if (isCursorBlinking) {
+      divRef.current.classList.remove('run-animation');
+      void divRef.current.offsetWidth;
+      divRef.current.classList.add('run-animation');
+    }
+  }, [isCursorBlinking]);
 
   return <>
     <div aria-hidden ref={divRef} {...props}>
@@ -45,6 +74,7 @@ export const Content = styled<Props>(({ children, isPaused = false, ...props }) 
   > :last-child::after {
     @apply inline-block;
 
+    display: ${({ isCursorBlinking = true }) => isCursorBlinking ? 'inline-block' : 'none'};
     background: var(--text-color, rgba(255, 255, 255, 0.8));
     content: '';
     width: 1ch;
@@ -73,4 +103,5 @@ export const Content = styled<Props>(({ children, isPaused = false, ...props }) 
   }
 `;
 
-export const Beat = (numBeats = 1) => <windups.Pause ms={numBeats * BEAT_MS} />;
+// todo - context
+export const Beat = (numBeats = 1) => <windups.Pause ms={numBeats * DEFAULT_BEAT_MS} />;
