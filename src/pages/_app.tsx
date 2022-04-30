@@ -44,6 +44,8 @@ export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
 
   return <>
     <Head>
+      <meta name="description" content="An uncannily-prescient 1960s science fiction novel; reprinted in English for the first time in 50 years" key="description" />
+
       <meta property="og:url" content={`https://www.bigcomputer.xyz${router.pathname}`} key="og:url" />
       <meta property="og:type" content="website" key="og:type" />
       <meta property="og:title" content="Tale of the Big Computer" key="og:title" />
