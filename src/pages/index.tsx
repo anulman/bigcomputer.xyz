@@ -1,14 +1,11 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
-import * as windups from 'windups';
 import * as Fathom from 'fathom-client';
-import VisuallyHidden from '@reach/visually-hidden';
-// todo - LineBreaker?, CharacterWrappers...
 
 import { Avatar } from '@src/components/Avatar';
 import * as Footnote from '@src/components/Footnote';
+import * as TypeyText from '@src/components/TypeyText';
 
-const BEAT_MS = 300;
 const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<HTMLDivElement>>`
   @apply min-h-screen min-w-full;
   @apply relative z-0;
@@ -41,10 +38,14 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
     overflow-y: scroll;
   }
 
-  p, blockquote {
+  > ${TypeyText.Content},
+  p,
+  blockquote {
     @apply w-full mx-auto;
     max-width: 72ch;
+  }
 
+  p, blockquote {
     + p, + blockquote {
       margin-top: 1rem;
     }
@@ -96,57 +97,39 @@ export default function HomePage(): JSX.Element {
   return <Page isShowingFootnote={isShowingFootnote}>
     <Avatar size={avatarSize} />
     <Footnote.Container onShow={onShowFootnote} onHide={onHideFootnote}>
-      <Content isShowingFootnote={isShowingFootnote}>
+      <TypeyText.Content isPaused={isShowingFootnote}>
         <p>
-          In 1966,{Beat()} three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} />{Beat(2)}
-          {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{Beat(2)}
+          In 1966,{TypeyText.Beat()} three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} />{TypeyText.Beat(2)}
+          {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{TypeyText.Beat(2)}
           {' '}a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
         </p>
-        {Beat(3)}
+        {TypeyText.Beat(3)}
 
         <p>
-          <em>Tale of the Big Computer</em> was first translated,{Beat()} published,{Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{Beat(2)}
-          {' '}It has since built a small following for its uncanny prescience;{Beat(1.5)}
-          {' '}the authors describe in vivid detail not just how we will interact with a global system of interconnected computers,{Beat()}
+          <em>Tale of the Big Computer</em> was first translated,{TypeyText.Beat()} published,{TypeyText.Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{TypeyText.Beat(2)}
+          {' '}It has since built a small following for its uncanny prescience;{TypeyText.Beat(1.5)}
+          {' '}the authors describe in vivid detail not just how we will interact with a global system of interconnected computers,{TypeyText.Beat()}
           {' '}but also how that system will act on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
-        {Beat(3)}
+        {TypeyText.Beat(3)}
 
         <p>
-          We are publishing a new English edition of this Swedish cult classic.{Beat(2)}
-          {' '}The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,{Beat()}
+          We are publishing a new English edition of this Swedish cult classic.{TypeyText.Beat(2)}
+          {' '}The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,{TypeyText.Beat()}
           {' '}and the 1968 translation is both unnecessarily and inaccurately gendered.
         </p>
-        {Beat(3)}
+        {TypeyText.Beat(3)}
 
         <p>
-          We are a group of engineers,{Beat(0.75)} publishers,{Beat(0.75)} translators,{Beat(0.75)} and above all:{Beat()} readers.{Beat(2)}
+          We are a group of engineers,{TypeyText.Beat(0.75)} publishers,{TypeyText.Beat(0.75)} translators,{TypeyText.Beat(0.75)} and above all:{TypeyText.Beat()} readers.{TypeyText.Beat(2)}
           {' '}<a href="https://discord.gg/Dmr833sdS5" target="_blank" rel="noreferrer" onClick={onClickedJoinDiscord}>Please join our Discord community</a>
           {' '}and help us make the Big Computer&apos;s heart beat once more <Footnote.Reference value={Footnotes.community} />.
         </p>
-      </Content>
+      </TypeyText.Content>
     </Footnote.Container>
   </Page>;
 }
 
-const Content = ({ children, isShowingFootnote = false }: React.PropsWithChildren<{ isShowingFootnote: boolean }>): JSX.Element => {
-  const divRef = React.useRef<HTMLDivElement>();
-
-  React.useEffect(() => {
-    // todo - is this the "best" way to allow re-cycling through links/footnotes?
-    divRef.current.nextElementSibling.querySelectorAll('button, a')
-      .forEach((child) => child.setAttribute('tabindex', '-1'));
-  }, []);
-
-  return <>
-    <div aria-hidden ref={divRef}>
-      <windups.WindupChildren isPaused={isShowingFootnote}>{children}</windups.WindupChildren>
-    </div>
-    <VisuallyHidden>{children}</VisuallyHidden>
-  </>;
-};
-
-const Beat = (numBeats = 1) => <windups.Pause ms={numBeats * BEAT_MS} />;
 const Footnotes = {
   arpanet: <>
     <p>The ARPAnet was the military research project that preceded web1 (aka &quot;the internet&quot;).</p>
