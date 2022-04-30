@@ -43,8 +43,9 @@ export const Content = styled<Props>(({ children, isPaused = false, ...props }) 
   </>;
 })`
   > :last-child::after {
-    @apply inline-block bg-white;
+    @apply inline-block;
 
+    background: var(--text-color, rgba(255, 255, 255, 0.8));
     content: '';
     width: 1ch;
     height: 1rem;

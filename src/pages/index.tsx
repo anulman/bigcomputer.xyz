@@ -11,10 +11,12 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
   @apply relative z-0;
   @apply mx-auto;
 
+  --text-color: ${({ isShowingFootnote = false }) => `rgba(255, 255, 255, ${isShowingFootnote ? '0.25' : '0.8'})`};
+
   font-size: 1rem;
   padding: 3rem 0.5rem;
   line-height: 1.3;
-  color: ${({ isShowingFootnote = false }) => isShowingFootnote ? 'rgba(255, 255, 255, 0.25)' : 'inherit'};
+  color: var(--text-color, inherit);
 
   > canvas {
     @apply fixed bottom-0 right-0;
