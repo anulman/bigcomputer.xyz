@@ -36,6 +36,7 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
     left: calc((100% - var(--width)) / 2);
     max-height: 85vh;
     overflow-y: scroll;
+    z-index: 1;
   }
 
   > ${TypeyText.Content},
