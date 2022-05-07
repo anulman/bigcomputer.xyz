@@ -24,6 +24,7 @@ export const Content = styled<Props>(({
 }) => {
   const divRef = React.useRef<HTMLDivElement>();
   const [hasStarted, setHasStarted] = React.useState(false);
+  const [isInFastMode, setIsInFastMode] = React.useState(false);
 
   // delay manually with our own state, because windups seems not to respect
   // <Pause>:first-child elems
@@ -31,15 +32,6 @@ export const Content = styled<Props>(({
     // todo - also handle with speed-up
     setTimeout(() => setHasStarted(true), startDelayBeats * beatMs);
   }, [startDelayBeats, beatMs]);
-
-  // manage cursor blinking
-  React.useEffect(() => {
-    if (isCursorBlinking) {
-      divRef.current?.classList.add('run-animation');
-    }
-
-    return () => divRef.current?.classList.remove('run-animation');
-  }, [isCursorBlinking]);
 
   // ensure non-aria keyboard users can't tab through visually hidden elems
   React.useEffect(() => {
@@ -51,6 +43,38 @@ export const Content = styled<Props>(({
     });
   }, []);
 
+  // manage fast-mode
+  const turnOnFastMode = React.useCallback((event: KeyboardEvent) => {
+    if (event.keyCode === 32 && !event.repeat) {
+      console.log('hiiii fast mode');
+      setIsInFastMode(true);
+    }
+  }, []);
+  const turnOffFastMode = React.useCallback((event: KeyboardEvent) => {
+    if (event.keyCode === 32) {
+      console.log('byeeee fast mode');
+      setIsInFastMode(false);
+    }
+  }, []);
+  React.useEffect(() => {
+    document.addEventListener('keydown', turnOnFastMode);
+    document.addEventListener('keyup', turnOffFastMode);
+
+    return () => {
+      document.removeEventListener('keydown', turnOnFastMode);
+      document.removeEventListener('keyup', turnOffFastMode);
+    };
+  }, []);
+
+  // manage cursor blinking
+  React.useEffect(() => {
+    if (isCursorBlinking) {
+      divRef.current?.classList.add('run-animation');
+    }
+
+    return () => divRef.current?.classList.remove('run-animation');
+  }, [isCursorBlinking]);
+
   const triggerReflow = React.useCallback(() => {
     if (isCursorBlinking) {
       divRef.current.classList.remove('run-animation');
@@ -58,13 +82,16 @@ export const Content = styled<Props>(({
       divRef.current.classList.add('run-animation');
     }
   }, [isCursorBlinking]);
+  console.log(isInFastMode);
 
   return <>
     <div aria-hidden ref={divRef} {...props}>
       <span />
       <windups.WindupChildren isPaused={!hasStarted || isPaused}>
         <windups.OnChar fn={triggerReflow}>
-          {children}
+          <windups.Pace ms={isInFastMode ? 4 : null}>
+            {children}
+          </windups.Pace>
         </windups.OnChar>
       </windups.WindupChildren>
     </div>

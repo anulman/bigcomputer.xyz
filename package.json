@@ -58,6 +58,8 @@
     "ansi-regex": "5.0.1",
     "color-string": "1.5.5",
     "minimist": "1.2.6",
-    "postcss": "8.4.12"
+    "postcss": "8.4.12",
+    "windups": "portal:../windups",
+    "react": "portal:../windups/node_modules/react"
   }
 }
