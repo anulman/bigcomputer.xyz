@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react';
+import React from 'react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -20,10 +20,10 @@ if (shouldRunAxe) {
 
 // TODO - add @types/react-dom
 
-export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
+export default function MyApp({ Component, pageProps }: AppProps): React.ReactNode {
   const router = useRouter();
 
-  useEffect(() => {
+  React.useEffect(() => {
     Fathom.load('IYSQIMIJ', {
       url: 'https://paul-branch.bigcomputer.xyz/script.js',
       includedDomains: ['bigcomputer.xyz', 'www.bigcomputer.xyz'],
@@ -36,7 +36,7 @@ export default function MyApp({ Component, pageProps }: AppProps): ReactNode {
     return router.events.off('routeChangeComplete', onRouteChangeComplete);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     console.info('This website is open source! See how it\'s made at https://github.com/anulman/bigcomputer.xyz');
     console.info('Heart favicon from Twemoji [CC-BY] (https://creativecommons.org/licenses/by/4.0/) via favicon.io (https://favicon.io/emoji-favicons/red-heart/)');
     configResponsive(mapTailwindConfigToResponsiveConfig(tailwindConfig));
