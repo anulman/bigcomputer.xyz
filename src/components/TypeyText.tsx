@@ -24,6 +24,7 @@ export const Content = styled<Props>(({
 }) => {
   const divRef = React.useRef<HTMLDivElement>();
   const [hasStarted, setHasStarted] = React.useState(false);
+  const [numCompleted, setNumCompleted] = React.useState(0);
 
   // delay manually with our own state, because windups seems not to respect
   // <Pause>:first-child elems
@@ -59,14 +60,24 @@ export const Content = styled<Props>(({
     }
   }, [isCursorBlinking]);
 
+  const renderedChildren = React.useMemo(
+    () => children instanceof Array
+      ? children.slice(0, numCompleted + 1)
+      : [children],
+    [numCompleted],
+  );
+  const incrementNumCompleted = React.useCallback(() => setTimeout(() => setNumCompleted((_numCompleted) => _numCompleted + 1), 3 * beatMs), []);
+
   return <>
     <div aria-hidden ref={divRef} {...props}>
       <span />
-      <windups.WindupChildren isPaused={!hasStarted || isPaused}>
-        <windups.OnChar fn={triggerReflow}>
-          {children}
-        </windups.OnChar>
-      </windups.WindupChildren>
+      {renderedChildren.map((child, index) => (
+        <windups.WindupChildren isPaused={!hasStarted || isPaused} key={`typey-text-${index}`} onFinished={incrementNumCompleted}>
+          <windups.OnChar fn={triggerReflow}>
+            {child}
+          </windups.OnChar>
+        </windups.WindupChildren>
+      ))}
     </div>
     <VisuallyHidden>{children}</VisuallyHidden>
   </>;

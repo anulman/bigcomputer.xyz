@@ -106,7 +106,6 @@ export default function HomePage(): JSX.Element {
           {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{TypeyText.Beat(2)}
           {' '}a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           <em>Tale of the Big Computer</em> was first translated,{TypeyText.Beat()} published,{TypeyText.Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{TypeyText.Beat(2)}
@@ -114,14 +113,12 @@ export default function HomePage(): JSX.Element {
           {' '}the authors describe in vivid detail not just how we will interact with a global system of interconnected computers,{TypeyText.Beat()}
           {' '}but also how that system will act on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           We are publishing a new English edition of this Swedish cult classic.{TypeyText.Beat(2)}
           {' '}The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,{TypeyText.Beat()}
           {' '}and the 1968 translation is both unnecessarily and inaccurately gendered.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           We are a group of engineers,{TypeyText.Beat(0.75)} publishers,{TypeyText.Beat(0.75)} translators,{TypeyText.Beat(0.75)} and above all:{TypeyText.Beat()} readers.{TypeyText.Beat(2)}
