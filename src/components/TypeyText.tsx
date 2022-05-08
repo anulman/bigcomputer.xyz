@@ -80,7 +80,7 @@ export const Content = styled<Props>(({
     width: 1ch;
     height: 1rem;
 
-    margin-top: 3px;
+    margin-top: 2px;
     margin-bottom: -4px;
   }
 

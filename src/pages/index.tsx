@@ -48,7 +48,7 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
     max-width: 72ch;
   }
 
-  p, blockquote {
+  div, p, blockquote {
     + p, + blockquote {
       margin-top: 1rem;
     }
