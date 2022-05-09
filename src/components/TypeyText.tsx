@@ -12,6 +12,8 @@ type Props = React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement> & {
   isCursorBlinking?: boolean;
   beatMs?: number;
   startDelayBeats?: number;
+  onChildWindupWillPlay?: (childIndex: number) => unknown | Promise<unknown>;
+  onChildWindupCompleted?: (childIndex: number) => unknown | Promise<unknown>;
 }>;
 
 const DEFAULT_BEAT_MS = 300;
@@ -56,15 +58,20 @@ const ContinuePrompt = styled.p<{ isShowing?: boolean }>`
   transition: opacity 0.5s ease-in;
 `;
 
-export const Content = styled<Props>(({
-  children,
-  isPaused = false,
-  isCursorBlinking = true,
-  beatMs = DEFAULT_BEAT_MS,
-  startDelayBeats = DEFAULT_START_DELAY_BEATS,
-  ...props
-}) => {
-  const divRef = React.useRef<HTMLDivElement>();
+// todo - scroll into view onChar
+export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDivElement> }>((
+  {
+    children,
+    isPaused = false,
+    isCursorBlinking = true,
+    beatMs = DEFAULT_BEAT_MS,
+    startDelayBeats = DEFAULT_START_DELAY_BEATS,
+    onChildWindupWillPlay,
+    onChildWindupCompleted,
+    innerRef: divRef,
+    ...props
+  },
+) => {
   const [hasStarted, setHasStarted] = React.useState(false);
   const [numCompleted, setNumCompleted] = React.useState(0);
   const [isPromptingToContinue, setIsPromptingToContinue] = React.useState(false);
@@ -110,12 +117,36 @@ export const Content = styled<Props>(({
     [numCompleted],
   );
 
-  const onWindupFinished = React.useCallback(() => {
-    setIsPromptingToContinue(true);
-    rxjs.race(onSpaceBar$, onTapScreen$)
-      .pipe(rx.take(1), rx.tap(() => setIsPromptingToContinue(false)), rx.delay(500))
-      .subscribe(() => setNumCompleted((_numCompleted) => _numCompleted + 1));
-  }, []);
+  const onWindupFinished = React.useCallback(async () => {
+    const newNumCompleted = numCompleted + 1;
+    const callbackResult = onChildWindupCompleted?.(numCompleted);
+
+    if (callbackResult instanceof Promise) {
+      try {
+        await callbackResult;
+      } catch (err) {
+        console.error('something unexpected threw while waiting for `onChildWindupCompleted`', err);
+      }
+    }
+
+    if (children instanceof Array && newNumCompleted < children.length) {
+      setIsPromptingToContinue(true);
+      rxjs.race(onSpaceBar$, onTapScreen$)
+        .pipe(
+          rx.take(1),
+          rx.switchMap(() => {
+            const willPlayCallbackResult = onChildWindupWillPlay?.(newNumCompleted);
+
+            return willPlayCallbackResult instanceof Promise
+              ? rxjs.from(willPlayCallbackResult)
+              : rxjs.of(willPlayCallbackResult);
+          }),
+          rx.tap(() => setIsPromptingToContinue(false)),
+          rx.delay(500),
+        )
+        .subscribe(() => setNumCompleted(newNumCompleted));
+    }
+  }, [onChildWindupCompleted, onChildWindupWillPlay, numCompleted]);
 
   return <>
     <div aria-hidden ref={divRef} {...props}>
