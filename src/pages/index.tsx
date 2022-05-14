@@ -5,6 +5,12 @@ import * as Fathom from 'fathom-client';
 import { Avatar } from '@src/components/Avatar';
 import * as Footnote from '@src/components/Footnote';
 import * as TypeyText from '@src/components/TypeyText';
+import * as BuyNow from '@src/components/BuyNow';
+
+const BuyButtonPosition = {
+  NextToContent: 'is-next-to-content',
+  UnderContent: 'is-below-content',
+} as const;
 
 const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<HTMLDivElement>>`
   @apply min-h-screen min-w-full;
@@ -12,6 +18,7 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
   @apply mx-auto;
 
   --text-color: ${({ isShowingFootnote = false }) => `rgba(255, 255, 255, ${isShowingFootnote ? '0.25' : '0.8'})`};
+  --width: min(100%, 72ch);
 
   font-size: 1rem;
   padding: 3rem 0.5rem;
@@ -27,7 +34,6 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
   > ${Footnote.Display} {
     @apply fixed;
 
-    --width: min(100%, 72ch);
     background: #ffffff33
     backdrop-filter: blur(4px);
     color: rgba(255, 255, 255, 0.8);
@@ -39,6 +45,24 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
     max-height: 85vh;
     overflow-y: scroll;
     z-index: 1;
+  }
+
+  > ${BuyNow.Button} {
+    @apply absolute;
+
+    &.${BuyButtonPosition.NextToContent} {
+      top: 3.25rem;
+      left: calc(50% + (var(--width) / 2) + 2rem);
+    }
+
+    &.${BuyButtonPosition.UnderContent} {
+      margin-top: -1.75rem;
+      right: max(0.5rem, calc(50% - (var(--width) / 2)));
+    }
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   > ${TypeyText.Content},
@@ -78,12 +102,61 @@ const Page = styled.main<{ isShowingFootnote: boolean } & React.HTMLAttributes<H
 const MIN_AVATAR_SIZE = 300;
 
 export default function HomePage(): JSX.Element {
+  const typeyTextRef = React.useRef<HTMLDivElement>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+
   const [avatarSize, setAvatarSize] = React.useState(MIN_AVATAR_SIZE);
   const [isShowingFootnote, setIsShowingFootnote] = React.useState(false);
+  const [isShowingBuyNowButton, setIsShowingBuyNowButton] = React.useState(false);
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
   const onClickedJoinDiscord = React.useCallback(() => Fathom.trackGoal('VCJ8PHAD', 0), []);
+
+  const onChildWindupWillPlay = React.useCallback(() => {
+    if (buttonRef.current.classList.contains(BuyButtonPosition.UnderContent)) {
+      setIsShowingBuyNowButton(false);
+    }
+  }, [isShowingBuyNowButton]);
+
+  const onChildWindupCompleted = React.useCallback((childNum) => {
+    setIsShowingBuyNowButton(true);
+
+    if (childNum === 0) {
+      return new Promise((resolve) => setTimeout(resolve, 1250));
+    }
+  }, []);
+
+  const onBuyButtonClick = React.useCallback((event) => {
+    alert('presales begin june 2022');
+    requestAnimationFrame(() => event.target.blur());
+  }, []);
+
+  React.useEffect(() => {
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const listener = () => {
+      const typeyTextRect = typeyTextRef.current.getBoundingClientRect();
+      const rightestMostestEdgeOfButton = typeyTextRect.right + 32 /* px; 2rem */ + buttonRect.width + 16 /* px; 1rem */;
+      const classList = buttonRef.current.classList;
+
+      if (rightestMostestEdgeOfButton >= document.documentElement.clientWidth) {
+        if (!classList.contains(BuyButtonPosition.UnderContent)) {
+          classList.add(BuyButtonPosition.UnderContent);
+          classList.remove(BuyButtonPosition.NextToContent);
+        }
+      } else if (!classList.contains(BuyButtonPosition.NextToContent)) {
+        classList.add(BuyButtonPosition.NextToContent);
+        classList.remove(BuyButtonPosition.UnderContent);
+      }
+    };
+
+    const observer = new ResizeObserver(listener);
+
+    listener();
+    observer.observe(document.body);
+
+    return () => observer.disconnect();
+  }, []);
 
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
@@ -100,13 +173,15 @@ export default function HomePage(): JSX.Element {
   return <Page isShowingFootnote={isShowingFootnote}>
     <Avatar size={avatarSize} />
     <Footnote.Container onShow={onShowFootnote} onHide={onHideFootnote}>
-      <TypeyText.Content isPaused={isShowingFootnote}>
+      <TypeyText.Content isPaused={isShowingFootnote}
+        onChildWindupCompleted={onChildWindupCompleted}
+        onChildWindupWillPlay={onChildWindupWillPlay}
+        innerRef={typeyTextRef}>
         <p>
           In 1966,{TypeyText.Beat()} three years before the ARPAnet delivered its first packet <Footnote.Reference value={Footnotes.arpanet} />{TypeyText.Beat(2)}
           {' '}and two years before Engelbart&apos;s mother of all demos <Footnote.Reference value={Footnotes.engelbart} />,{TypeyText.Beat(2)}
           {' '}a father/daughter duo <Footnote.Reference value={Footnotes.alfvens} /> published a history of the internet in a Swedish sci-fi novel.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           <em>Tale of the Big Computer</em> was first translated,{TypeyText.Beat()} published,{TypeyText.Beat()} and widely panned in 1968 <Footnote.Reference value={Footnotes.reviews} />.{TypeyText.Beat(2)}
@@ -114,14 +189,12 @@ export default function HomePage(): JSX.Element {
           {' '}the authors describe in vivid detail not just how we will interact with a global system of interconnected computers,{TypeyText.Beat()}
           {' '}but also how that system will act on us <Footnote.Reference value={Footnotes.prescience} />.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           We are publishing a new English edition of this Swedish cult classic.{TypeyText.Beat(2)}
           {' '}The original books have become quite rare and expensive <Footnote.Reference value={Footnotes.rare} />,{TypeyText.Beat()}
           {' '}and the 1968 translation is both unnecessarily and inaccurately gendered.
         </p>
-        {TypeyText.Beat(3)}
 
         <p>
           We are a group of engineers,{TypeyText.Beat(0.75)} publishers,{TypeyText.Beat(0.75)} translators,{TypeyText.Beat(0.75)} and above all:{TypeyText.Beat()} readers.{TypeyText.Beat(2)}
@@ -130,9 +203,11 @@ export default function HomePage(): JSX.Element {
         </p>
       </TypeyText.Content>
     </Footnote.Container>
+    <BuyNow.Button onClick={onBuyButtonClick} isShowing={isShowingBuyNowButton} innerRef={buttonRef} />
   </Page>;
 }
 
+// todo - override footnote <Display> with buy now content when in buy now mode!!
 const Footnotes = {
   arpanet: <>
     <p>The ARPAnet was the military research project that preceded web1 (aka &quot;the internet&quot;).</p>
