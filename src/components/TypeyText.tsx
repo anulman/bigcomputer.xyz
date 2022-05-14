@@ -2,6 +2,7 @@ import * as React from 'react';
 import { styled } from 'linaria/react';
 import * as rxjs from 'rxjs';
 import * as rx from 'rxjs/operators';
+import * as rxHooks from 'observable-hooks';
 import * as windups from 'windups';
 import VisuallyHidden from '@reach/visually-hidden';
 
@@ -12,7 +13,14 @@ type Props = React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement> & {
   isCursorBlinking?: boolean;
   beatMs?: number;
   startDelayBeats?: number;
+  onChildWindupWillPlay?: (childIndex: number) => unknown | Promise<unknown>;
+  onChildWindupCompleted?: (childIndex: number) => unknown | Promise<unknown>;
 }>;
+
+enum ContinuePrompt {
+  Desktop = 'press <spacebar> to continue',
+  Mobile = 'tap screen to continue',
+}
 
 const DEFAULT_BEAT_MS = 300;
 const DEFAULT_START_DELAY_BEATS = 4;
@@ -21,53 +29,65 @@ const DEFAULT_START_DELAY_BEATS = 4;
 const onSpaceBar$ = typeof window === 'undefined'
   ? rxjs.EMPTY
   : rxjs.fromEventPattern<KeyboardEvent>(
-    (handler) => window.addEventListener('keydown', handler, { capture: true }),
-    (handler) => window.removeEventListener('keydown', handler, { capture: true }),
+    (handler) => window.addEventListener('keydown', handler),
+    (handler) => window.removeEventListener('keydown', handler),
   ).pipe(
-    rx.filter((event) => event.key === ' ' || event.code === 'Space' || event.keyCode === 32),
-    rx.tap((event) => event.preventDefault())
+    rx.filter((event) => event.key === ' ' || event.code === 'Space'),
   );
 
 const onTapScreen$ = typeof window === 'undefined'
   ? rxjs.EMPTY
   : rxjs.defer(() => rxjs.race(
     rxjs.fromEventPattern<MouseEvent>(
-      (handler) => window.addEventListener('mousedown', handler, { capture: true }),
-      (handler) => window.removeEventListener('mousedown', handler, { capture: true }),
+      (handler) => window.addEventListener('mousedown', handler),
+      (handler) => window.removeEventListener('mousedown', handler),
     ),
     rxjs.fromEventPattern<TouchEvent>(
-      (handler) => window.addEventListener('touchstart', handler, { capture: true }),
-      (handler) => window.removeEventListener('touchstart', handler, { capture: true }),
+      (handler) => window.addEventListener('touchstart', handler),
+      (handler) => window.removeEventListener('touchstart', handler),
     ),
     rxjs.fromEventPattern<PointerEvent>(
-      (handler) => window.addEventListener('pointerdown', handler, { capture: true }),
-      (handler) => window.removeEventListener('pointerdown', handler, { capture: true }),
+      (handler) => window.addEventListener('pointerdown', handler),
+      (handler) => window.removeEventListener('pointerdown', handler),
     ),
   ))
     .pipe(
-      rx.filter(() => isTouchDevice),
-      rx.tap((event) => event.preventDefault())
+      rx.filter((event) => isTouchDevice && !(event.target instanceof HTMLButtonElement)),
     );
 
-const ContinuePrompt = styled.p<{ isShowing?: boolean }>`
+const ContinuePromptContainer = styled.p<{ isShowing?: boolean }>`
   @apply italic;
 
   opacity: ${({ isShowing }) => isShowing === true ? 0.7 : 0};
   transition: opacity 0.5s ease-in;
 `;
 
-export const Content = styled<Props>(({
-  children,
-  isPaused = false,
-  isCursorBlinking = true,
-  beatMs = DEFAULT_BEAT_MS,
-  startDelayBeats = DEFAULT_START_DELAY_BEATS,
-  ...props
-}) => {
-  const divRef = React.useRef<HTMLDivElement>();
+// todo - scroll into view onChar
+export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDivElement> }>((
+  {
+    children,
+    isPaused = false,
+    isCursorBlinking = true,
+    beatMs = DEFAULT_BEAT_MS,
+    startDelayBeats = DEFAULT_START_DELAY_BEATS,
+    onChildWindupWillPlay,
+    onChildWindupCompleted,
+    innerRef: divRef,
+    ...props
+  },
+) => {
   const [hasStarted, setHasStarted] = React.useState(false);
   const [numCompleted, setNumCompleted] = React.useState(0);
   const [isPromptingToContinue, setIsPromptingToContinue] = React.useState(false);
+  const [continuePrompt, setContinuePrompt] = React.useState(ContinuePrompt.Desktop);
+
+  const onCanContinue$ = rxHooks.useObservable((inputs$) => inputs$.pipe(
+    rx.switchMap(([isPaused]) => rxjs.merge(onSpaceBar$, onTapScreen$).pipe(
+      rx.map((event) => [isPaused, event] as [boolean, KeyboardEvent | MouseEvent | TouchEvent | PointerEvent]),
+    )),
+    rx.filter(([isPaused]) => !isPaused),
+    rx.map(([/* isPaused */, event]) => event),
+  ), [isPaused]);
 
   // delay manually with our own state, because windups seems not to respect
   // <Pause>:first-child elems
@@ -110,11 +130,46 @@ export const Content = styled<Props>(({
     [numCompleted],
   );
 
-  const onWindupFinished = React.useCallback(() => {
-    setIsPromptingToContinue(true);
-    rxjs.race(onSpaceBar$, onTapScreen$)
-      .pipe(rx.take(1), rx.tap(() => setIsPromptingToContinue(false)), rx.delay(500))
-      .subscribe(() => setNumCompleted((_numCompleted) => _numCompleted + 1));
+  const onWindupFinished = React.useCallback(async () => {
+    const newNumCompleted = numCompleted + 1;
+    const callbackResult = onChildWindupCompleted?.(numCompleted);
+
+    if (callbackResult instanceof Promise) {
+      try {
+        await callbackResult;
+      } catch (err) {
+        console.error('something unexpected threw while waiting for `onChildWindupCompleted`', err);
+      }
+    }
+
+    if (children instanceof Array && newNumCompleted < children.length) {
+      setIsPromptingToContinue(true);
+      onCanContinue$
+        .pipe(
+          rx.take(1),
+          rx.tap((event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }),
+          rx.switchMap(() => {
+            const willPlayCallbackResult = onChildWindupWillPlay?.(newNumCompleted);
+
+            return willPlayCallbackResult instanceof Promise
+              ? rxjs.from(willPlayCallbackResult)
+              : rxjs.of(willPlayCallbackResult);
+          }),
+          rx.tap(() => setIsPromptingToContinue(false)),
+          rx.delay(500),
+        )
+        .subscribe(() => setNumCompleted(newNumCompleted));
+    }
+  }, [onChildWindupCompleted, onChildWindupWillPlay, numCompleted]);
+
+
+  React.useEffect(() => {
+    if (isTouchDevice) {
+      setContinuePrompt(ContinuePrompt.Mobile);
+    }
   }, []);
 
   return <>
@@ -133,15 +188,13 @@ export const Content = styled<Props>(({
       ))}
     </div>
 
-    <ContinuePrompt aria-hidden isShowing={
+    <ContinuePromptContainer aria-hidden isShowing={
       isPromptingToContinue &&
       children instanceof Array &&
       (numCompleted + 1) < children.length
     }>
-      {isTouchDevice
-        ? <>[tap screen to continue]</>
-        : <>[press spacebar to continue]</>}
-    </ContinuePrompt>
+      [{continuePrompt}]
+    </ContinuePromptContainer>
 
     <VisuallyHidden>{children}</VisuallyHidden>
   </>;
