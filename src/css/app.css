@@ -1,8 +1,13 @@
+@font-face {
+  font-family: Berkeley Mono;
+  src: url("/assets/fonts/BerkeleyMonoTrial-Regular.otf") format("opentype");
+}
+
 html,
 body {
   background: black;
   color: rgba(255, 255, 255, 0.8);
-  font-family: Courier;
+  font-family: Berkeley Mono, Courier;
   font-size: 16px;
 }
 
