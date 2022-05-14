@@ -1752,6 +1752,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^18.0.4":
+  version: 18.0.4
+  resolution: "@types/react-dom@npm:18.0.4"
+  dependencies:
+    "@types/react": "*"
+  checksum: decde42d02a90ac2fe94fd6bfd9c78d002c03762a2d940df9422bf61af89c03d05e2113fd55fe45521fe27fa872a79dfd654b7d6b89652b455425efdcb763c58
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:*":
+  version: 18.0.9
+  resolution: "@types/react@npm:18.0.9"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 162364dad716d9017ee34aabf2ea37499709ebbdef70392ae1b39225985971e1a46f121efb9c5c7da92144ee1d96d4525df806a7c1c03a5db7fd31dd034ddc7a
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:^17.0.38":
   version: 17.0.38
   resolution: "@types/react@npm:17.0.38"
@@ -2358,6 +2378,7 @@ __metadata:
     "@types/lodash": ^4.14.178
     "@types/node": ^14.14.2
     "@types/react": ^17.0.38
+    "@types/react-dom": ^18.0.4
     "@types/three": ^0.137.0
     "@typescript-eslint/eslint-plugin": ^5.9.0
     "@typescript-eslint/parser": ^5.9.0
