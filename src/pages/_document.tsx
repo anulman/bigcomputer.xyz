@@ -8,7 +8,7 @@ export default class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          <meta name="content-security-policy" content="script-src 'strict-dynamic' https: 'unsafe-inline'; object-src 'none'; base-uri 'none';" />
+          <meta httpEquiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; base-uri 'none';" />
 
           <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png" />
           <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png" />
