@@ -7,6 +7,8 @@ import * as Footnote from '@src/components/Footnote';
 import * as TypeyText from '@src/components/TypeyText';
 import * as BuyNow from '@src/components/BuyNow';
 
+import * as analytics from '@src/utils/analytics';
+
 const BuyButtonPosition = {
   NextToContent: 'is-next-to-content',
   UnderContent: 'is-below-content',
@@ -128,6 +130,7 @@ export default function HomePage(): JSX.Element {
   }, []);
 
   const onBuyButtonClick = React.useCallback((event) => {
+    analytics.track('Clicked CTA', { which: 'Buy Now' });
     alert('presales begin june 2022');
     requestAnimationFrame(() => event.target.blur());
   }, []);
