@@ -5,6 +5,7 @@ import * as rx from 'rxjs/operators';
 import * as rxHooks from 'observable-hooks';
 
 import { createSafeContext, useSafeContext } from '@src/hooks/use-safe-context';
+import * as analytics from '@src/utils/analytics';
 
 const FootnoteContext = createSafeContext<{
   currentFootnote$: rxjs.Observable<CurrentFootnote>;
@@ -67,6 +68,10 @@ export const Container = ({ onShow, onHide, children, ...props }: ContainerProps
       isPersistent: currentFootnote?.isPersistent === true ? true : event.type === 'click',
     });
     onShow?.();
+
+    if (key && currentFootnote?.key !== key) {
+      analytics.track('Showed Footnote', { which: key });
+    }
   }, [onShow]);
 
   React.useEffect(() => {
