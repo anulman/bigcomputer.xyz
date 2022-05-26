@@ -120,7 +120,7 @@ export default function HomePage(): JSX.Element {
     }
   }, [isShowingBuyNowButton]);
 
-  const onChildWindupCompleted = React.useCallback((childNum) => {
+  const onChildWindupCompleted = React.useCallback((childNum: number) => {
     setIsShowingBuyNowButton(true);
 
     if (childNum === 0) {
@@ -128,10 +128,10 @@ export default function HomePage(): JSX.Element {
     }
   }, []);
 
-  const onBuyButtonClick = React.useCallback((event) => {
+  const onBuyButtonClick = React.useCallback<React.MouseEventHandler>((event) => {
     analytics.track('Clicked CTA', { which: 'Buy Now' });
     alert('presales begin june 2022');
-    requestAnimationFrame(() => event.target.blur());
+    requestAnimationFrame(() => (event.target as HTMLElement).blur());
   }, []);
 
   React.useEffect(() => {
