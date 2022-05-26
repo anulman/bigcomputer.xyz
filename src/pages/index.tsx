@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
-import * as Fathom from 'fathom-client';
 
 import { Avatar } from '@src/components/Avatar';
 import * as Footnote from '@src/components/Footnote';
@@ -113,7 +112,7 @@ export default function HomePage(): JSX.Element {
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
-  const onClickedJoinDiscord = React.useCallback(() => Fathom.trackGoal('VCJ8PHAD', 0), []);
+  const onClickedJoinDiscord = React.useCallback(() => analytics.track('Clicked CTA', { which: 'Join Discord' }), []);
 
   const onChildWindupWillPlay = React.useCallback(() => {
     if (buttonRef.current.classList.contains(BuyButtonPosition.UnderContent)) {
