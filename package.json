@@ -16,6 +16,7 @@
   "dependencies": {
     "@reach/visually-hidden": "^0.16.0",
     "ahooks": "^3.1.9",
+    "ethers": "^5.6.8",
     "fathom-client": "^3.4.1",
     "lodash": "^4.17.21",
     "next": "^12.1.6",
