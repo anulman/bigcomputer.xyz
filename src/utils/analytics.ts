@@ -46,5 +46,6 @@ if (typeof window !== 'undefined') {
     });
 
   rxjs.fromEvent(window, 'beforeunload')
+    .pipe(rx.tap(() => cookies.setCookie('LastUnloadedAt', Date.now())))
     .subscribe(() => track('Page Unloaded'));
 }
