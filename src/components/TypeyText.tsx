@@ -7,6 +7,7 @@ import * as windups from 'windups';
 import VisuallyHidden from '@reach/visually-hidden';
 
 import { isTouchDevice } from '@src/utils/is-touch-device';
+import * as analytics from '@src/utils/analytics';
 
 type Props = React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement> & {
   isPaused?: boolean;
@@ -151,6 +152,10 @@ export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDiv
             event.preventDefault();
             event.stopPropagation();
           }),
+          rx.tap(() => analytics.track(
+            'Continued TypeyText',
+            { which: 'Main Page', fromNum: numCompleted },
+          )),
           rx.switchMap(() => {
             const willPlayCallbackResult = onChildWindupWillPlay?.(newNumCompleted);
 

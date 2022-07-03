@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { styled } from 'linaria/react';
-import * as Fathom from 'fathom-client';
 
 import { Avatar } from '@src/components/Avatar';
 import * as Footnote from '@src/components/Footnote';
 import * as TypeyText from '@src/components/TypeyText';
 import * as BuyNow from '@src/components/BuyNow';
+
+import * as analytics from '@src/utils/analytics';
 
 const BuyButtonPosition = {
   NextToContent: 'is-next-to-content',
@@ -111,7 +112,7 @@ export default function HomePage(): JSX.Element {
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
-  const onClickedJoinDiscord = React.useCallback(() => Fathom.trackGoal('VCJ8PHAD', 0), []);
+  const onClickedJoinDiscord = React.useCallback(() => analytics.track('Clicked CTA', { which: 'Join Discord' }), []);
 
   const onChildWindupWillPlay = React.useCallback(() => {
     if (buttonRef.current.classList.contains(BuyButtonPosition.UnderContent)) {
@@ -119,7 +120,7 @@ export default function HomePage(): JSX.Element {
     }
   }, [isShowingBuyNowButton]);
 
-  const onChildWindupCompleted = React.useCallback((childNum) => {
+  const onChildWindupCompleted = React.useCallback((childNum: number) => {
     setIsShowingBuyNowButton(true);
 
     if (childNum === 0) {
@@ -127,9 +128,10 @@ export default function HomePage(): JSX.Element {
     }
   }, []);
 
-  const onBuyButtonClick = React.useCallback((event) => {
+  const onBuyButtonClick = React.useCallback<React.MouseEventHandler>((event) => {
+    analytics.track('Clicked CTA', { which: 'Buy Now' });
     alert('presales begin june 2022');
-    requestAnimationFrame(() => event.target.blur());
+    requestAnimationFrame(() => (event.target as HTMLElement).blur());
   }, []);
 
   React.useEffect(() => {
