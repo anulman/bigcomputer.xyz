@@ -29,7 +29,8 @@ export const Modal = styled<Props>(
         contentColorOpacity: 0,
         overlayBackdropBlur: 0,
         overlayBackdropHueRotate: 0,
-        overlayBackdropBrightness: 1
+        overlayBackdropBrightness: 1,
+        allOpacity: 0,
       },
       enter: {
         contentBackdropBlur: 4,
@@ -39,7 +40,9 @@ export const Modal = styled<Props>(
         contentColorOpacity: 0.8,
         overlayBackdropBlur: 2,
         overlayBackdropHueRotate: -120,
-        overlayBackdropBrightness: 1.25 },
+        overlayBackdropBrightness: 1.25,
+        allOpacity: 1,
+      },
       leave: {
         contentBackdropBlur: 0,
         contentBackdropBrightness: 0,
@@ -49,6 +52,7 @@ export const Modal = styled<Props>(
         overlayBackdropBlur: 0,
         overlayBackdropHueRotate: 0,
         overlayBackdropBrightness: 1,
+        allOpacity: 0,
       },
     });
 
@@ -82,6 +86,7 @@ export const Modal = styled<Props>(
             '--content-backdrop-opacity': styles.contentBackdropOpacity,
             '--content-background-opacity': styles.contentBackgroundOpacity,
             '--content-color-opacity': styles.contentColorOpacity,
+            '--all-opacity': styles.allOpacity,
           }}>
             {children}
           </AnimatedContent>
@@ -135,5 +140,7 @@ export const Modal = styled<Props>(
       blur(var(--content-backdrop-blur, 4px))
       brightness(var(--content-backdrop-brightness, 60%))
       opacity(var(--content-backdrop-opacity, 0.8));
+
+    opacity: var(--all-opacity, 1);
   }
 `;
