@@ -104,20 +104,20 @@ const MIN_AVATAR_SIZE = 300;
 
 export default function HomePage(): JSX.Element {
   const typeyTextRef = React.useRef<HTMLDivElement>(null);
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   const [avatarSize, setAvatarSize] = React.useState(MIN_AVATAR_SIZE);
   const [isShowingFootnote, setIsShowingFootnote] = React.useState(false);
   const [isShowingBuyNowButton, setIsShowingBuyNowButton] = React.useState(false);
+  const [isShowingBuyNowModal, setIsShowingBuyNowModal] = React.useState(false);
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);
   const onClickedJoinDiscord = React.useCallback(() => analytics.track('Clicked CTA', { which: 'Join Discord' }), []);
 
   const onChildWindupWillPlay = React.useCallback(() => {
-    if (buttonRef.current.classList.contains(BuyButtonPosition.UnderContent)) {
-      setIsShowingBuyNowButton(false);
-    }
+    //    if (buttonRef.current.classList.contains(BuyButtonPosition.UnderContent)) {
+    //      setIsShowingBuyNowButton(false);
+    //    }
   }, [isShowingBuyNowButton]);
 
   const onChildWindupCompleted = React.useCallback((childNum: number) => {
@@ -130,35 +130,35 @@ export default function HomePage(): JSX.Element {
 
   const onBuyButtonClick = React.useCallback<React.MouseEventHandler>((event) => {
     analytics.track('Clicked CTA', { which: 'Buy Now' });
-    alert('presales begin june 2022');
+    setIsShowingBuyNowModal(true);
     requestAnimationFrame(() => (event.target as HTMLElement).blur());
   }, []);
 
-  React.useEffect(() => {
-    const buttonRect = buttonRef.current.getBoundingClientRect();
-    const listener = () => {
-      const typeyTextRect = typeyTextRef.current.getBoundingClientRect();
-      const rightestMostestEdgeOfButton = typeyTextRect.right + 32 /* px; 2rem */ + buttonRect.width + 16 /* px; 1rem */;
-      const classList = buttonRef.current.classList;
+  // React.useEffect(() => {
+  //   const buttonRect = buttonRef.current.getBoundingClientRect();
+  //   const listener = () => {
+  //     const typeyTextRect = typeyTextRef.current.getBoundingClientRect();
+  //     const rightestMostestEdgeOfButton = typeyTextRect.right + 32 /* px; 2rem */ + buttonRect.width + 16 /* px; 1rem */;
+  //     const classList = buttonRef.current.classList;
 
-      if (rightestMostestEdgeOfButton >= document.documentElement.clientWidth) {
-        if (!classList.contains(BuyButtonPosition.UnderContent)) {
-          classList.add(BuyButtonPosition.UnderContent);
-          classList.remove(BuyButtonPosition.NextToContent);
-        }
-      } else if (!classList.contains(BuyButtonPosition.NextToContent)) {
-        classList.add(BuyButtonPosition.NextToContent);
-        classList.remove(BuyButtonPosition.UnderContent);
-      }
-    };
+  //     if (rightestMostestEdgeOfButton >= document.documentElement.clientWidth) {
+  //       if (!classList.contains(BuyButtonPosition.UnderContent)) {
+  //         classList.add(BuyButtonPosition.UnderContent);
+  //         classList.remove(BuyButtonPosition.NextToContent);
+  //       }
+  //     } else if (!classList.contains(BuyButtonPosition.NextToContent)) {
+  //       classList.add(BuyButtonPosition.NextToContent);
+  //       classList.remove(BuyButtonPosition.UnderContent);
+  //     }
+  //   };
 
-    const observer = new ResizeObserver(listener);
+  //   const observer = new ResizeObserver(listener);
 
-    listener();
-    observer.observe(document.body);
+  //   listener();
+  //   observer.observe(document.body);
 
-    return () => observer.disconnect();
-  }, []);
+  //   return () => observer.disconnect();
+  // }, []);
 
   React.useEffect(() => {
     const observer = new ResizeObserver(() => {
@@ -205,7 +205,8 @@ export default function HomePage(): JSX.Element {
         </p>
       </TypeyText.Content>
     </Footnote.Container>
-    <BuyNow.Button onClick={onBuyButtonClick} isShowing={isShowingBuyNowButton} innerRef={buttonRef} />
+    <BuyNow.Button onClick={onBuyButtonClick} isShowing={isShowingBuyNowButton} />
+    <BuyNow.Modal isOpen={isShowingBuyNowModal} onDismiss={() => setIsShowingBuyNowModal(false)} anchorRect={typeyTextRef.current?.getBoundingClientRect()} />
   </Page>;
 }
 
