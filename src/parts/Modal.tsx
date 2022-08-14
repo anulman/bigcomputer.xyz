@@ -14,6 +14,20 @@ type Props = React.PropsWithChildren<
 const AnimatedOverlay = spring.animated(Dialog.DialogOverlay);
 const AnimatedContent = spring.animated(Dialog.DialogContent);
 
+declare module 'csstype' {
+  interface Properties {
+    '--overlay-backdrop-blur'?: `${number}px`;
+    '--overlay-backdrop-hue-rotate'?: `${number}deg`;
+    '--overlay-backdrop-brightness'?: number;
+    '--content-backdrop-blur'?: `${number}px`;
+    '--content-backdrop-brightness'?: number;
+    '--content-backdrop-opacity'?: number;
+    '--content-background-opacity'?: number;
+    '--content-color-opacity'?: number;
+    '--all-opacity'?: number;
+  }
+}
+
 export const Modal = styled<Props>(
   ({ children, ...props }: RequiredKey<Props, 'children'>) => {
     const innerState = React.useRef<{ wasOpen: boolean; restoreFocusToElem?: HTMLElement }>({
@@ -81,7 +95,7 @@ export const Modal = styled<Props>(
           {..._.omit(props, 'anchorRect', 'style', 'isOpen', 'aria-label')}
         >
           <AnimatedContent aria-label={props['aria-label']} style={{
-            '--content-backdrop-blur': styles.contentBackdropBlur.to((px) => `${px}px`),
+            '--content-backdrop-blur': styles.contentBackdropBlur.to((px) => `${px}px` as `${number}px`),
             '--content-backdrop-brightness': styles.contentBackdropBrightness,
             '--content-backdrop-opacity': styles.contentBackdropOpacity,
             '--content-background-opacity': styles.contentBackgroundOpacity,
