@@ -10,7 +10,7 @@ const SCRIPT_SRCS = [
   // IFF dev: unsafe-eval
   ...(process.env.NODE_ENV === 'development'
     ? ['\'unsafe-eval\'', '\'unsafe-inline\'']
-    : ['sha256-GPegF5iJqpMso8+D7cth7iBWpfnPdlE7RsDl5OLKgEs='] // todo - hash this
+    : ['sha256-M/ifWaE42EfpzQPMu2kNcglgadvM37hNEl+sAOZZf04='] // todo - hash this myself
   ),
   // firstparty
   'fp.bigcomputer.xyz',
