@@ -2,12 +2,15 @@ import * as React from 'react';
 
 type GoToCallback = (direction: 'next' | 'previous') => void;
 
-export const useNextPreviousShortcuts = (goToCallback: GoToCallback) => {
+export const useNextPreviousShortcuts = (goToCallback: GoToCallback, canUseTab = true) => {
   React.useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       switch (event.key) {
       case 'Tab':
-        // todo - stop capturing tab once user makes an explicit selection?
+        if (!canUseTab) {
+          return;
+        }
+
         goToCallback(event.shiftKey ? 'previous' : 'next');
         break;
       case 'j':
