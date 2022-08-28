@@ -1,4 +1,5 @@
 type Cookies = Record<string, unknown> & {
+  PaymentIntentId: string;
   LastLoadedAt: number;
   LastUnloadedAt: number;
 };
@@ -17,4 +18,8 @@ export const setCookie = <Key extends keyof Cookies>(name: Key, value: Cookies[K
     ? `expires=${expiresAt.toUTCString()}`
     : `max-age=${MAX_COOKIE_AGE_IN_SECONDS}`
   }; secure;`;
+};
+
+export const deleteCookie = <Key extends keyof Cookies>(name: Key) => {
+  document.cookie = `${name}=; max-age=0;`;
 };
