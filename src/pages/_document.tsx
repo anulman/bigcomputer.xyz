@@ -16,6 +16,8 @@ const SCRIPT_SRCS = [
   'fp.bigcomputer.xyz',
   // fathom
   'paul-branch.bigcomputer.xyz',
+  // stripe
+  'js.stripe.com',
 ];
 
 console.log(SCRIPT_SRCS);
@@ -39,6 +41,7 @@ export default class MyDocument extends Document {
         <body>
           <Main />
           <NextScript />
+          <script src="https://js.stripe.com/v3" async defer />
         </body>
       </Html>
     );
