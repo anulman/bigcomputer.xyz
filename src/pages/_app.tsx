@@ -42,6 +42,8 @@ export default function MyApp({ Component, pageProps }: AppProps): React.ReactNo
 
   return <>
     <Head>
+      {/* `width=device-width` is required for stripe 3d-secure */}
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta name="description" content="An uncannily-prescient 1960s science fiction novel; reprinted in English for the first time in 50 years" key="description" />
 
       <meta property="og:url" content={`https://www.bigcomputer.xyz${router.pathname}`} key="og:url" />
