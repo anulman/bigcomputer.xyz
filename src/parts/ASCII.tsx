@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 
-export const Title = styled<React.HTMLAttributes<HTMLPreElement>>((props) => <pre {...props}>
+const InnerTitle = (props: React.HTMLAttributes<HTMLPreElement>) => <pre {...props}>
 &nbsp;&nbsp;__  .__               __         .__                   _____    __  .__            <br />
 _/  |_|  |__   ____   _/  |______  |  |   ____     _____/ ____\ _/  |_|  |__   ____  <br />
 \   __\  |  \_/ __ \  \   __\__  \ |  | _/ __ \   /  _ \   __\  \   __\  |  \_/ __ \ <br />
@@ -14,4 +14,6 @@ _/  |_|  |__   ____   _/  |______  |  |   ____     _____/ ____\ _/  |_|  |__   _
 &nbsp;\ \   | \_\ \  / /_/  &gt;  / /  \  \__(  &lt;_&gt; )  Y Y  \  |_&gt; &gt;  |  /|  | \  ___/|  | \/<br />
 &nbsp;&nbsp;\_\  |___  /__\___  /  /_/    \___  &gt;____/|__|_|  /   __/|____/ |__|  \___  &gt;__|   <br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\/  /_____/              \/            \/|__|                    \/       <br />
-</pre>)``;
+</pre>;
+
+export const Title = styled(InnerTitle)``;

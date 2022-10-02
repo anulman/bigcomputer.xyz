@@ -1,6 +1,6 @@
 import * as React from 'react';
 import _ from 'lodash';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 import * as Dialog from '@reach/dialog';
 import * as spring from '@react-spring/web';
 
@@ -28,87 +28,87 @@ declare module 'csstype' {
   }
 }
 
-export const Modal = styled<Props>(
-  ({ children, ...props }: RequiredKey<Props, 'children'>) => {
-    const innerState = React.useRef<{ wasOpen: boolean; restoreFocusToElem?: HTMLElement }>({
-      wasOpen: props.isOpen,
-    });
+const InnerModal = ({ children, ...props }: RequiredKey<Props, 'children'>) => {
+  const innerState = React.useRef<{ wasOpen: boolean; restoreFocusToElem?: HTMLElement }>({
+    wasOpen: props.isOpen,
+  });
 
-    const transitions = spring.useTransition(props.isOpen, {
-      from: {
-        contentBackdropBlur: 0,
-        contentBackdropBrightness: 0,
-        contentBackdropOpacity: 0,
-        contentBackgroundOpacity: 0,
-        contentColorOpacity: 0,
-        overlayBackdropBlur: 0,
-        overlayBackdropHueRotate: 0,
-        overlayBackdropBrightness: 1,
-        allOpacity: 0,
-      },
-      enter: {
-        contentBackdropBlur: 4,
-        contentBackdropBrightness: 0.6,
-        contentBackdropOpacity: 0.8,
-        contentBackgroundOpacity: 0.1325,
-        contentColorOpacity: 0.8,
-        overlayBackdropBlur: 2,
-        overlayBackdropHueRotate: -120,
-        overlayBackdropBrightness: 1.25,
-        allOpacity: 1,
-      },
-      leave: {
-        contentBackdropBlur: 0,
-        contentBackdropBrightness: 0,
-        contentBackdropOpacity: 0,
-        contentBackgroundOpacity: 0,
-        contentColorOpacity: 0,
-        overlayBackdropBlur: 0,
-        overlayBackdropHueRotate: 0,
-        overlayBackdropBrightness: 1,
-        allOpacity: 0,
-      },
-    });
+  const transitions = spring.useTransition(props.isOpen, {
+    from: {
+      contentBackdropBlur: 0,
+      contentBackdropBrightness: 0,
+      contentBackdropOpacity: 0,
+      contentBackgroundOpacity: 0,
+      contentColorOpacity: 0,
+      overlayBackdropBlur: 0,
+      overlayBackdropHueRotate: 0,
+      overlayBackdropBrightness: 1,
+      allOpacity: 0,
+    },
+    enter: {
+      contentBackdropBlur: 4,
+      contentBackdropBrightness: 0.6,
+      contentBackdropOpacity: 0.8,
+      contentBackgroundOpacity: 0.1325,
+      contentColorOpacity: 0.8,
+      overlayBackdropBlur: 2,
+      overlayBackdropHueRotate: -120,
+      overlayBackdropBrightness: 1.25,
+      allOpacity: 1,
+    },
+    leave: {
+      contentBackdropBlur: 0,
+      contentBackdropBrightness: 0,
+      contentBackdropOpacity: 0,
+      contentBackgroundOpacity: 0,
+      contentColorOpacity: 0,
+      overlayBackdropBlur: 0,
+      overlayBackdropHueRotate: 0,
+      overlayBackdropBrightness: 1,
+      allOpacity: 0,
+    },
+  });
 
-    React.useEffect(() => {
-      if (props.isOpen && !innerState.current.wasOpen) {
-        // we are opening; cache the last focused element
-        innerState.current.restoreFocusToElem = document.activeElement as HTMLElement;
-      } else if (!props.isOpen && innerState.current.wasOpen) {
-        // restore focus to the last focused element if any, then clear the cache
-        innerState.current.restoreFocusToElem?.focus();
-        innerState.current.restoreFocusToElem = undefined;
-      }
+  React.useEffect(() => {
+    if (props.isOpen && !innerState.current.wasOpen) {
+      // we are opening; cache the last focused element
+      innerState.current.restoreFocusToElem = document.activeElement as HTMLElement;
+    } else if (!props.isOpen && innerState.current.wasOpen) {
+      // restore focus to the last focused element if any, then clear the cache
+      innerState.current.restoreFocusToElem?.focus();
+      innerState.current.restoreFocusToElem = undefined;
+    }
 
-      innerState.current.wasOpen = true;
-    }, [props.isOpen]);
+    innerState.current.wasOpen = true;
+  }, [props.isOpen]);
 
-    return transitions(
-      (styles, item) => item && (
-        <AnimatedOverlay
-          dangerouslyBypassFocusLock={!props.isOpen}
-          style={_.merge({}, props.style, {
-            '--overlay-backdrop-blur': styles.overlayBackdropBlur.to((px) => `${px}px`),
-            '--overlay-backdrop-hue-rotate': styles.overlayBackdropHueRotate.to((deg) => `${deg}deg`),
-            '--overlay-backdrop-brightness': styles.overlayBackdropBrightness,
-          })}
-          {..._.omit(props, 'anchorRect', 'style', 'isOpen', 'aria-label')}
-        >
-          <AnimatedContent aria-label={props['aria-label']} style={{
-            '--content-backdrop-blur': styles.contentBackdropBlur.to((px) => `${px}px` as `${number}px`),
-            '--content-backdrop-brightness': styles.contentBackdropBrightness,
-            '--content-backdrop-opacity': styles.contentBackdropOpacity,
-            '--content-background-opacity': styles.contentBackgroundOpacity,
-            '--content-color-opacity': styles.contentColorOpacity,
-            '--all-opacity': styles.allOpacity,
-          }}>
-            {children}
-          </AnimatedContent>
-        </AnimatedOverlay>
-      ),
-    );
-  },
-)`
+  return transitions(
+    (styles, item) => item && (
+      <AnimatedOverlay
+        dangerouslyBypassFocusLock={!props.isOpen}
+        style={_.merge({}, props.style, {
+          '--overlay-backdrop-blur': styles.overlayBackdropBlur.to((px) => `${px}px`),
+          '--overlay-backdrop-hue-rotate': styles.overlayBackdropHueRotate.to((deg) => `${deg}deg`),
+          '--overlay-backdrop-brightness': styles.overlayBackdropBrightness,
+        })}
+        {..._.omit(props, 'anchorRect', 'style', 'isOpen', 'aria-label')}
+      >
+        <AnimatedContent aria-label={props['aria-label']} style={{
+          '--content-backdrop-blur': styles.contentBackdropBlur.to((px) => `${px}px` as `${number}px`),
+          '--content-backdrop-brightness': styles.contentBackdropBrightness,
+          '--content-backdrop-opacity': styles.contentBackdropOpacity,
+          '--content-background-opacity': styles.contentBackgroundOpacity,
+          '--content-color-opacity': styles.contentColorOpacity,
+          '--all-opacity': styles.allOpacity,
+        }}>
+          {children}
+        </AnimatedContent>
+      </AnimatedOverlay>
+    ),
+  );
+};
+
+export const Modal = styled(InnerModal)`
   @apply fixed;
 
   top: 0;

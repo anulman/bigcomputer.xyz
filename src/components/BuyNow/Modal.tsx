@@ -1,6 +1,5 @@
-import _ from 'lodash';
 import * as React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 
 import * as data from '@src/data';
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
@@ -23,157 +22,157 @@ const SmallTitle = styled(ASCII.Title)`
   font-size: 0.5rem;
 `;
 
-export const Modal = styled(
-  (props: Parameters<typeof modal.Modal>[0]) => {
-    const [canTabIntoOptions, setCanTabIntoOptions] = React.useState(true);
-    const packageOptionsRef = React.useRef<HTMLFieldSetElement>(null);
-    const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(data.PACKAGE_OPTIONS[0]);
-    const goToOption = React.useCallback((direction: 'next' | 'previous') => {
-      const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
+const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) => {
+  const [canTabIntoOptions, setCanTabIntoOptions] = React.useState(true);
+  const packageOptionsRef = React.useRef<HTMLFieldSetElement>(null);
+  const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(data.PACKAGE_OPTIONS[0]);
+  const goToOption = React.useCallback((direction: 'next' | 'previous') => {
+    const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
 
-      if (!options) {
-        return;
+    if (!options) {
+      return;
+    }
+
+    const currentOptionIndex = data.PACKAGE_OPTIONS.findIndex((option) => option === selectedOption);
+    const newOptionIndex = direction === 'next'
+      ? (currentOptionIndex + 1) % options.length
+      : (currentOptionIndex - 1) < 0 ? options.length - 1 : currentOptionIndex - 1;
+
+    const newOption = options[newOptionIndex];
+
+    newOption.focus();
+    newOption.click();
+  }, [selectedOption]);
+
+  // const focusCurrentOption = React.useCallback(() => {
+  //   const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
+  //   const currentOptionIndex = data.PACKAGE_OPTIONS.findIndex((option) => option === selectedOption);
+
+  //   options[currentOptionIndex].focus();
+  // }, [selectedOption]);
+
+  const onSelectOption = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const option = event.target.value as data.PackageOption;
+
+    if (option && data.PACKAGE_OPTIONS.includes(option)) {
+      setSelectedOption(option);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const onFocusEvent = (event: FocusEvent) => {
+      console.log(event);
+      if (event.type === 'focusin' && packageOptionsRef.current?.contains(event.target as HTMLElement)) {
+        console.log('in if');
+        packageOptionsRef.current?.removeAttribute('tabindex');
+        packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.removeAttribute('tabindex'));
+        setCanTabIntoOptions(true);
+      } else if (event.type === 'focusout' && !packageOptionsRef.current?.contains(event.relatedTarget as HTMLElement)) {
+        console.log('in else');
+        packageOptionsRef.current?.setAttribute('tabindex', '-1');
+        packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.setAttribute('tabindex', '-1'));
+        setCanTabIntoOptions(false);
+        event.preventDefault();
+        event.stopPropagation();
       }
+    };
 
-      const currentOptionIndex = data.PACKAGE_OPTIONS.findIndex((option) => option === selectedOption);
-      const newOptionIndex = direction === 'next'
-        ? (currentOptionIndex + 1) % options.length
-        : (currentOptionIndex - 1) < 0 ? options.length - 1 : currentOptionIndex - 1;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (packageOptionsRef.current.contains(document.activeElement) && event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
 
-      const newOption = options[newOptionIndex];
+        const iframe = packageOptionsRef.current.parentElement.parentElement
+          .querySelector('.StripeElement iframe') as HTMLIFrameElement;
 
-      newOption.focus();
-      newOption.click();
-    }, [selectedOption]);
-
-    const focusCurrentOption = React.useCallback(() => {
-      const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
-      const currentOptionIndex = data.PACKAGE_OPTIONS.findIndex((option) => option === selectedOption);
-
-      options[currentOptionIndex].focus();
-    }, [selectedOption]);
-
-    const onSelectOption = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-      const option = event.target.value as data.PackageOption;
-
-      if (option && data.PACKAGE_OPTIONS.includes(option)) {
-        setSelectedOption(option);
+        iframe?.focus();
       }
-    }, []);
+    };
 
-    React.useEffect(() => {
-      const onFocusEvent = (event: FocusEvent) => {
-        console.log(event);
-        if (event.type === 'focusin' && packageOptionsRef.current?.contains(event.target as HTMLElement)) {
-          console.log('in if');
-          packageOptionsRef.current?.removeAttribute('tabindex');
-          packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.removeAttribute('tabindex'));
-          setCanTabIntoOptions(true);
-        } else if (event.type === 'focusout' && !packageOptionsRef.current?.contains(event.relatedTarget as HTMLElement)) {
-          console.log('in else');
-          packageOptionsRef.current?.setAttribute('tabindex', '-1');
-          packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.setAttribute('tabindex', '-1'));
-          setCanTabIntoOptions(false);
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      };
+    if (props.isOpen) {
+      window.addEventListener('keydown', onKeyDown, true);
+      document.addEventListener('focusin', onFocusEvent);
+      document.addEventListener('focusout', onFocusEvent);
+      packageOptionsRef.current?.querySelector('input')?.focus();
+    }
 
-      const onKeyDown = (event: KeyboardEvent) => {
-        if (packageOptionsRef.current.contains(document.activeElement) && event.key === 'Enter') {
-          event.preventDefault();
-          event.stopPropagation();
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      document.removeEventListener('focusin', onFocusEvent);
+      document.removeEventListener('focusout', onFocusEvent);
+    };
+  }, [props.isOpen]);
 
-          const iframe = packageOptionsRef.current.parentElement.parentElement
-            .querySelector('.StripeElement iframe') as HTMLIFrameElement;
+  useNextPreviousShortcuts(goToOption, canTabIntoOptions);
 
-          iframe?.focus();
-        }
-      };
+  return (
+    <modal.Modal {...props} aria-label="Purchase The Tale of the Big Computer">
+      <SmallTitle />
+      <stripe.Context amount={PACKAGE_CONFIGS[selectedOption].price}>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <section>
+            <h4>Select your presales package:</h4>
+            <fieldset ref={packageOptionsRef}>
+              {data.PACKAGE_OPTIONS.map(option => {
+                const { label } = PACKAGE_CONFIGS[option];
 
-      if (props.isOpen) {
-        window.addEventListener('keydown', onKeyDown, true);
-        document.addEventListener('focusin', onFocusEvent);
-        document.addEventListener('focusout', onFocusEvent);
-        packageOptionsRef.current?.querySelector('input')?.focus();
-      }
+                return (
+                  <label key={option}>
+                    <input
+                      type="radio"
+                      name="package_option"
+                      value={option}
+                      checked={selectedOption === option}
+                      onChange={onSelectOption}
+                    />
+                    {typeof label === 'string' ? <span>{label}</span> : label}
+                  </label>
+                );
+              })}
+            </fieldset>
+          </section>
+          <section>
+            <h4>Goodies</h4>
+            <ul>
+              {/* todo - tooltip */}
+              <li>Unlimited* DRM-free ebook downloads</li>
+              <li>1x copy of the book, once printed (hardcover or softcover)</li>
+              <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>
+              1x copy of a limited, numbered edition of the book (0x00 - 0xff)
+              </text.StrikeThrough>
+              {/* todo - tooltip for above =  printed by a modified IBM Selectric I */}
+              <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>More goodies to be announced...</text.StrikeThrough>
+            </ul>
+          </section>
+          <section>
+            <h4>Shipping</h4>
+            <ul>
+              <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>Free shipping</text.StrikeThrough>
+              <li>Free pickup at participating local bookstores (US + Canada only)</li>
+            </ul>
+          </section>
+          <section>
+            <h4>Customer</h4>
+            <label>
+              Email address
+              <input type="email" required placeholder="ada@lovela.ce" />
+            </label>
+          </section>
+          {/*<section>
+            <h4>Payment</h4>
+            <stripe.Payment onEscape={focusCurrentOption} />
+          </section>
+          */}
+          <button type="submit">
+            Proceed to payment (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
+          </button>
+        </form>
+      </stripe.Context>
+    </modal.Modal>
+  );
+};
 
-      return () => {
-        window.removeEventListener('keydown', onKeyDown, true);
-        document.removeEventListener('focusin', onFocusEvent);
-        document.removeEventListener('focusout', onFocusEvent);
-      };
-    }, [props.isOpen]);
-
-    useNextPreviousShortcuts(goToOption, canTabIntoOptions);
-
-    return (
-      <modal.Modal {...props} aria-label="Purchase The Tale of the Big Computer">
-        <SmallTitle />
-        <stripe.Context amount={PACKAGE_CONFIGS[selectedOption].price}>
-          <form onSubmit={(event) => event.preventDefault()}>
-            <section>
-              <h4>Select your presales package:</h4>
-              <fieldset ref={packageOptionsRef}>
-                {data.PACKAGE_OPTIONS.map(option => {
-                  const { label } = PACKAGE_CONFIGS[option];
-
-                  return (
-                    <label key={option}>
-                      <input
-                        type="radio"
-                        name="package_option"
-                        value={option}
-                        checked={selectedOption === option}
-                        onChange={onSelectOption}
-                      />
-                      {typeof label === 'string' ? <span>{label}</span> : label}
-                    </label>
-                  );
-                })}
-              </fieldset>
-            </section>
-            <section>
-              <h4>Goodies</h4>
-              <ul>
-                {/* todo - tooltip */}
-                <li>Unlimited* DRM-free ebook downloads</li>
-                <li>1x copy of the book, once printed (hardcover or softcover)</li>
-                <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>
-                1x copy of a limited, numbered edition of the book (0x00 - 0xff)
-                </text.StrikeThrough>
-                {/* todo - tooltip for above =  printed by a modified IBM Selectric I */}
-                <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>More goodies to be announced...</text.StrikeThrough>
-              </ul>
-            </section>
-            <section>
-              <h4>Shipping</h4>
-              <ul>
-                <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>Free shipping</text.StrikeThrough>
-                <li>Free pickup at participating local bookstores (US + Canada only)</li>
-              </ul>
-            </section>
-            <section>
-              <h4>Customer</h4>
-              <label>
-                Email address
-                <input type="email" required placeholder="ada@lovela.ce" />
-              </label>
-            </section>
-            /*<section>
-              <h4>Payment</h4>
-              <stripe.Payment onEscape={focusCurrentOption} />
-            </section>
-            */}
-            <button type="submit">
-              Proceed to payment (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
-            </button>
-          </form>
-        </stripe.Context>
-      </modal.Modal>
-    );
-  },
-)`
+export const Modal = styled(InnerModal)`
   // todo - linaria'ify
   --form-control-color: hotpink;
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 import * as rxjs from 'rxjs';
 import * as rx from 'rxjs/operators';
 import * as rxHooks from 'observable-hooks';
@@ -64,7 +64,7 @@ const ContinuePromptContainer = styled.p<{ isShowing?: boolean }>`
 `;
 
 // todo - scroll into view onChar
-export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDivElement> }>((
+const InnerContent = (
   {
     children,
     isPaused = false,
@@ -75,7 +75,7 @@ export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDiv
     onChildWindupCompleted,
     innerRef: divRef,
     ...props
-  },
+  }: Props & { innerRef: React.MutableRefObject<HTMLDivElement> },
 ) => {
   const [hasStarted, setHasStarted] = React.useState(false);
   const [numCompleted, setNumCompleted] = React.useState(0);
@@ -203,7 +203,9 @@ export const Content = styled<Props & { innerRef: React.MutableRefObject<HTMLDiv
 
     <VisuallyHidden>{children}</VisuallyHidden>
   </>;
-})`
+};
+
+export const Content = styled(InnerContent)`
   > :last-child::after {
     @apply inline-block;
 

@@ -1,5 +1,5 @@
 module.exports = {
-  presets: ['next/babel', 'linaria/babel'],
+  presets: ['next/babel'],
   plugins: [
     ['module-resolver', {
       root: ['./src'],

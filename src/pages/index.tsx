@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 
 import { Avatar } from '@src/components/Avatar';
 import * as Footnote from '@src/components/Footnote';

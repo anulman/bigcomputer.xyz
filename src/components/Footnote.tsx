@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled } from 'linaria/react';
+import { styled } from '@linaria/react';
 import * as rxjs from 'rxjs';
 import * as rx from 'rxjs/operators';
 import * as rxHooks from 'observable-hooks';
@@ -94,87 +94,87 @@ export const Container = ({ onShow, onHide, children, ...props }: ContainerProps
   );
 };
 
-export const Display = styled<React.HTMLAttributes<HTMLDivElement>>(
-  (props) => {
-    const { currentFootnote$, show, hide } = useFootnoteContext();
-    const elementRef = React.useRef<HTMLDivElement>(null);
+const InnerDisplay = (props: React.HTMLAttributes<HTMLDivElement>) => {
+  const { currentFootnote$, show, hide } = useFootnoteContext();
+  const elementRef = React.useRef<HTMLDivElement>(null);
 
-    const onMouseOver$ = fromRefEvent<MouseEvent>(elementRef, 'mouseover');
-    const onMouseOut$ = fromRefEvent<MouseEvent>(elementRef, 'mouseout');
-    const currentFootnote = rxHooks.useObservableState(currentFootnote$);
+  const onMouseOver$ = fromRefEvent<MouseEvent>(elementRef, 'mouseover');
+  const onMouseOut$ = fromRefEvent<MouseEvent>(elementRef, 'mouseout');
+  const currentFootnote = rxHooks.useObservableState(currentFootnote$);
 
-    const repositionFootnote = React.useCallback(
-      anchorFootnoteToTrigger(elementRef.current, currentFootnote?.trigger),
-      [elementRef, currentFootnote],
-    );
+  const repositionFootnote = React.useCallback(
+    anchorFootnoteToTrigger(elementRef.current, currentFootnote?.trigger),
+    [elementRef, currentFootnote],
+  );
 
-    rxHooks.useSubscription(onMouseOver$, show);
-    rxHooks.useSubscription(
-      onMouseOut$.pipe(currentFootnoteIsNotPersistent(currentFootnote$)),
-      hide,
-    );
+  rxHooks.useSubscription(onMouseOver$, show);
+  rxHooks.useSubscription(
+    onMouseOut$.pipe(currentFootnoteIsNotPersistent(currentFootnote$)),
+    hide,
+  );
 
-    rxHooks.useSubscription(
-      currentFootnote$.pipe(
-        rx.filter((current) => current !== null),
-        rx.distinctUntilKeyChanged('key'),
+  rxHooks.useSubscription(
+    currentFootnote$.pipe(
+      rx.filter((current) => current !== null),
+      rx.distinctUntilKeyChanged('key'),
+    ),
+    () => {
+      elementRef.current.style.visibility = 'visible';
+      elementRef.current.style.pointerEvents = 'auto';
+      repositionFootnote();
+    },
+  );
+
+  rxHooks.useLayoutSubscription(
+    currentFootnote$.pipe(rx.filter((current) => current === null)),
+    () => {
+      elementRef.current.style.visibility = 'hidden';
+      elementRef.current.style.pointerEvents = 'none';
+    },
+  );
+
+  rxHooks.useSubscription(
+    currentFootnote$.pipe(
+      rx.switchMap(
+        (current) => current?.isPersistent ?? false
+          // emit the first "click outside the footnote" OR `Escape` keypress
+          ? rxjs.race(
+            // onDocumentClick$
+            rxjs.fromEvent<MouseEvent>(document, 'click', { capture: true }).pipe(
+              eventTargetIsNotContainedBy(elementRef.current, current.trigger),
+            ),
+            // onEscapeKeydown$
+            rxjs.fromEvent<KeyboardEvent>(document, 'keydown', { capture: true })
+              .pipe(rx.filter((event) => event.key === 'Escape'))
+          ).pipe(
+            rx.first(),
+            rx.tap((event) => event.preventDefault()),
+          )
+          // if it's not persistent, nevermind
+          : rxjs.NEVER,
       ),
-      () => {
-        elementRef.current.style.visibility = 'visible';
-        elementRef.current.style.pointerEvents = 'auto';
-        repositionFootnote();
-      },
-    );
+    ),
+    hide,
+  );
 
-    rxHooks.useLayoutSubscription(
-      currentFootnote$.pipe(rx.filter((current) => current === null)),
-      () => {
-        elementRef.current.style.visibility = 'hidden';
-        elementRef.current.style.pointerEvents = 'none';
-      },
-    );
+  React.useEffect(() => {
+    const observer = new ResizeObserver(() => repositionFootnote());
 
-    rxHooks.useSubscription(
-      currentFootnote$.pipe(
-        rx.switchMap(
-          (current) => current?.isPersistent ?? false
-            // emit the first "click outside the footnote" OR `Escape` keypress
-            ? rxjs.race(
-              // onDocumentClick$
-              rxjs.fromEvent<MouseEvent>(document, 'click', { capture: true }).pipe(
-                eventTargetIsNotContainedBy(elementRef.current, current.trigger),
-              ),
-              // onEscapeKeydown$
-              rxjs.fromEvent<KeyboardEvent>(document, 'keydown', { capture: true })
-                .pipe(rx.filter((event) => event.key === 'Escape'))
-            ).pipe(
-              rx.first(),
-              rx.tap((event) => event.preventDefault()),
-            )
-            // if it's not persistent, nevermind
-            : rxjs.NEVER,
-        ),
-      ),
-      hide,
-    );
+    observer.observe(document.body);
+    observer.observe(elementRef.current);
 
-    React.useEffect(() => {
-      const observer = new ResizeObserver(() => repositionFootnote());
+    return () => {
+      observer.disconnect();
+    };
+  }, [elementRef]);
 
-      observer.observe(document.body);
-      observer.observe(elementRef.current);
+  return <aside ref={elementRef} {...props}>
+    <span>[{currentFootnote?.key}] - </span>
+    {currentFootnote?.content}
+  </aside>;
+};
 
-      return () => {
-        observer.disconnect();
-      };
-    }, [elementRef]);
-
-    return <aside ref={elementRef} {...props}>
-      <span>[{currentFootnote?.key}] - </span>
-      {currentFootnote?.content}
-    </aside>;
-  }
-)`
+export const Display = styled(InnerDisplay)`
   /* START - attrs that will be overridden by our listeners */
   visibility: hidden;
   pointer-events: none;
@@ -185,48 +185,48 @@ export const Display = styled<React.HTMLAttributes<HTMLDivElement>>(
   }
 `;
 
-export const Reference = styled<React.HTMLAttributes<HTMLButtonElement> & { value: React.ReactNode; children?: never; }>(
-  ({ value, ...props }): JSX.Element => {
-    const { currentFootnote$, registerFootnote, show, hide } = useFootnoteContext();
-    const [footnoteNum] = React.useState(() => registerFootnote(value));
-    const elementRef = React.useRef<HTMLButtonElement>(null);
+const InnerReference = ({ value, ...props }: React.HTMLAttributes<HTMLButtonElement> & { value: React.ReactNode; children?: never; }): JSX.Element => {
+  const { currentFootnote$, registerFootnote, show, hide } = useFootnoteContext();
+  const [footnoteNum] = React.useState(() => registerFootnote(value));
+  const elementRef = React.useRef<HTMLButtonElement>(null);
 
-    const onClick$ = fromRefEvent<MouseEvent>(elementRef, 'click');
-    const onMouseOver$ = fromRefEvent<MouseEvent>(elementRef, 'mouseover');
-    const onMouseOut$ = fromRefEvent<MouseEvent>(elementRef, 'mouseout');
+  const onClick$ = fromRefEvent<MouseEvent>(elementRef, 'click');
+  const onMouseOver$ = fromRefEvent<MouseEvent>(elementRef, 'mouseover');
+  const onMouseOut$ = fromRefEvent<MouseEvent>(elementRef, 'mouseout');
 
-    rxHooks.useSubscription(
-      onClick$.pipe(rx.tap(() => elementRef.current.style.color = 'crimson')),
-      (event) => show(event, footnoteNum),
-    );
+  rxHooks.useSubscription(
+    onClick$.pipe(rx.tap(() => elementRef.current.style.color = 'crimson')),
+    (event) => show(event, footnoteNum),
+  );
 
-    rxHooks.useSubscription(
-      onMouseOver$.pipe(
-        rx.withLatestFrom(currentFootnote$),
-        rx.filter(([, current]) => current?.isPersistent !== true),
-        rx.tap(() => elementRef.current.style.color = 'white'),
-      ),
-      ([event]) => show(event, footnoteNum),
-    );
+  rxHooks.useSubscription(
+    onMouseOver$.pipe(
+      rx.withLatestFrom(currentFootnote$),
+      rx.filter(([, current]) => current?.isPersistent !== true),
+      rx.tap(() => elementRef.current.style.color = 'white'),
+    ),
+    ([event]) => show(event, footnoteNum),
+  );
 
-    rxHooks.useSubscription(
-      onMouseOut$.pipe(currentFootnoteIsNotPersistent(currentFootnote$)),
-      hide,
-    );
+  rxHooks.useSubscription(
+    onMouseOut$.pipe(currentFootnoteIsNotPersistent(currentFootnote$)),
+    hide,
+  );
 
-    rxHooks.useSubscription(
-      currentFootnote$.pipe(
-        rx.map((current) => current?.trigger),
-        rx.filter((trigger) => trigger !== elementRef.current),
-      ),
-      () => elementRef.current.style.color = '',
-    );
+  rxHooks.useSubscription(
+    currentFootnote$.pipe(
+      rx.map((current) => current?.trigger),
+      rx.filter((trigger) => trigger !== elementRef.current),
+    ),
+    () => elementRef.current.style.color = '',
+  );
 
-    return <button ref={elementRef} {...props}>
-      [{footnoteNum}]
-    </button>;
-  }
-)`
+  return <button ref={elementRef} {...props}>
+    [{footnoteNum}]
+  </button>;
+};
+
+export const Reference = styled(InnerReference)`
   @apply border-none bg-transparent p-0 m-0 underline;
 
   &:hover, &:active {
