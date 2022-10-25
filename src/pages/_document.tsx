@@ -10,7 +10,7 @@ const SCRIPT_SRCS = [
   // IFF dev: unsafe-eval
   ...(process.env.NODE_ENV === 'development'
     ? ['\'unsafe-eval\'', '\'unsafe-inline\'']
-    : ['sha256-M/ifWaE42EfpzQPMu2kNcglgadvM37hNEl+sAOZZf04='] // todo - hash this myself
+    : ['\'sha256-M/ifWaE42EfpzQPMu2kNcglgadvM37hNEl+sAOZZf04=\''] // todo - hash this myself
   ),
   // firstparty
   'fp.bigcomputer.xyz',
@@ -18,6 +18,7 @@ const SCRIPT_SRCS = [
   'paul-branch.bigcomputer.xyz',
 ];
 
+console.log(SCRIPT_SRCS);
 export default class MyDocument extends Document {
   render(): JSX.Element {
     return (
