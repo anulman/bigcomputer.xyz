@@ -130,7 +130,7 @@ export default function HomePage(): JSX.Element {
 
   const onBuyButtonClick = React.useCallback<React.MouseEventHandler>((event) => {
     analytics.track('Clicked CTA', { which: 'Buy Now' });
-    alert('presales begin june 2022');
+    alert('presales open q4 2022');
     requestAnimationFrame(() => (event.target as HTMLElement).blur());
   }, []);
 
