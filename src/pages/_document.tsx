@@ -20,7 +20,6 @@ const SCRIPT_SRCS = [
   'js.stripe.com',
 ];
 
-console.log(SCRIPT_SRCS);
 export default class MyDocument extends Document {
   render(): JSX.Element {
     return (
