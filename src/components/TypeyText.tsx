@@ -60,7 +60,7 @@ const ContinuePromptContainer = styled.p<{ isShowing?: boolean }>`
   @apply italic;
 
   opacity: ${({ isShowing }) => isShowing === true ? 0.7 : 0};
-  transition: opacity 0.5s ease-in;
+  /* TODO - this was fading in at pageload - transition: opacity 0.5s ease-in; */
 `;
 
 // todo - scroll into view onChar

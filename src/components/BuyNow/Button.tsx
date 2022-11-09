@@ -13,5 +13,5 @@ const InnerButton = (props: React.HTMLAttributes<HTMLButtonElement> & { isShowin
 export const Button = styled(InnerButton)`
   pointer-events: ${({ isShowing }) => isShowing ? 'auto' : 'none'};
   opacity: ${({ isShowing }) => isShowing ? 0.7 : 0};
-  transition: opacity 0.5s ease-in;
+  /* TODO - this was fading in at pageload - transition: opacity 0.5s ease-in; */
 `;
