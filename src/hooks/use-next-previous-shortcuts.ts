@@ -2,7 +2,13 @@ import * as React from 'react';
 
 type GoToCallback = (direction: 'next' | 'previous') => void;
 
-export const useNextPreviousShortcuts = (goToCallback: GoToCallback, canUseTab = true) => {
+const isNextKey = (key: 'j' | 'k' | 'n' | 'p' | 'ArrowLeft' | 'ArrowRight') =>
+  key === 'j' || key === 'n' || key === 'ArrowRight';
+
+const isEmacsKey = (key: 'j' | 'k' | 'n' | 'p' | 'ArrowLeft' | 'ArrowRight') =>
+  key === 'n' || key === 'p';
+
+export const useNextPreviousShortcuts = (goToCallback: GoToCallback, { canUseTab = true, canUseArrows = true, canUseChars = true, charsRequireCtrl = false } = {}) => {
   React.useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -14,24 +20,27 @@ export const useNextPreviousShortcuts = (goToCallback: GoToCallback, canUseTab =
         goToCallback(event.shiftKey ? 'previous' : 'next');
         break;
       case 'j':
-      case 'ArrowRight':
-      case 'n':
-        if (event.key === 'n' && !event.ctrlKey) {
-          // Ctrl+N is valid; N alone is not
-          return;
-        }
-
-        goToCallback('next');
-        break;
       case 'k':
-      case 'ArrowLeft':
+      case 'n':
       case 'p':
-        if (event.key === 'p' && !event.ctrlKey) {
-          // Ctrl+P is valid; P alone is not
+        if (!canUseChars) {
           return;
         }
 
-        goToCallback('previous');
+        if (!event.ctrlKey && (charsRequireCtrl || isEmacsKey(event.key))) {
+          // regardless of `charsRequireCtrl`, emacs keys require ctrl
+          return;
+        }
+
+        goToCallback(isNextKey(event.key) ? 'next' : 'previous');
+        break;
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        if (!canUseArrows) {
+          return;
+        }
+
+        goToCallback(isNextKey(event.key) ? 'next' : 'previous');
         break;
       default:
         return;
@@ -44,5 +53,5 @@ export const useNextPreviousShortcuts = (goToCallback: GoToCallback, canUseTab =
     document.addEventListener('keydown', listener);
 
     return () => document?.removeEventListener('keydown', listener);
-  }, [goToCallback]);
+  }, [goToCallback, canUseTab, canUseArrows, canUseChars, charsRequireCtrl]);
 };
