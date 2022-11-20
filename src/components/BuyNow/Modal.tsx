@@ -22,13 +22,46 @@ const SmallTitle = styled(ASCII.Title)`
   font-size: 0.5rem;
 `;
 
+const Cursor = styled.span<{ position?: number }>`
+  @apply inline-block;
+
+  position: absolute;
+  background: var(--text-color, rgba(255, 255, 255, 0.8));
+  content: '';
+  width: 1ch;
+  height: 1rem;
+
+  margin-top: 3px;
+  margin-bottom: -4px;
+
+  &.run-animation {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0% {
+      opacity: 1.0;
+    }
+
+    25% {
+      opacity: 0.0;
+    }
+
+    75% {
+      opacity: 1.0;
+    }
+  }
+}
+`;
+
 const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) => {
-  const [canTabIntoOptions, setCanTabIntoOptions] = React.useState(true);
   const packageOptionsRef = React.useRef<HTMLFieldSetElement>(null);
+  const emailInputRef = React.useRef<HTMLInputElement>(null);
   const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(data.PACKAGE_OPTIONS[0]);
+  const [email, setEmail] = React.useState<string>('');
+  const [cursorPosition, setCursorPosition] = React.useState<number>(0);
   const goToOption = React.useCallback((direction: 'next' | 'previous') => {
     const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
-
     if (!options) {
       return;
     }
@@ -39,10 +72,58 @@ const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) 
       : (currentOptionIndex - 1) < 0 ? options.length - 1 : currentOptionIndex - 1;
 
     const newOption = options[newOptionIndex];
+    options.forEach((option) => {
+      if (option === newOption) {
+        setSelectedOption(option.value as data.PackageOption);
+        option.setAttribute('checked', '');
+      } else {
+        option.removeAttribute('checked');
+      }
+    });
 
-    newOption.focus();
-    newOption.click();
+    emailInputRef.current?.focus();
   }, [selectedOption]);
+
+  React.useEffect(() => {
+    const updateCursor = () => requestAnimationFrame(() => setCursorPosition(emailInputRef.current?.selectionStart ?? 0));
+
+    document.addEventListener('keydown', updateCursor, { passive: true });
+    document.addEventListener('mousedown', updateCursor, { passive: true });
+
+    () => {
+      document.removeEventListener('keydown', updateCursor);
+      document.removeEventListener('mousedown', updateCursor);
+    };
+  }, []);
+
+  // manage cursor blinking
+  React.useEffect(() => {
+    const cursor = emailInputRef.current
+      ?.parentElement
+      ?.querySelector(`.${Cursor.__linaria.className}`) as HTMLSpanElement;
+
+    if (!cursor) {
+      return;
+    }
+
+    cursor.classList.remove('run-animation');
+    requestAnimationFrame(() => {
+      const { x: cursorX, y: cursorY } = cursor.getBoundingClientRect();
+      const { x: boundingX, y: boundingY, width: boundingWidth } = cursor.parentElement.getBoundingClientRect();
+
+      cursor.style.left = null;
+      cursor.style.transform = null;
+
+      cursor.classList.add('run-animation');
+
+      console.log(cursorX, boundingX + boundingWidth);
+      if (cursorX > (boundingX + boundingWidth)) {
+        console.log('hieeeiei');
+        cursor.style.left = '0';
+        cursor.style.transform = `translateY(calc(${cursorY - boundingY + 1}px + 1.5rem))`;
+      }
+    });
+  }, [cursorPosition]);
 
   // const focusCurrentOption = React.useCallback(() => {
   //   const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
@@ -60,114 +141,109 @@ const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) 
   }, []);
 
   React.useEffect(() => {
-    const onFocusEvent = (event: FocusEvent) => {
-      console.log(event);
-      if (event.type === 'focusin' && packageOptionsRef.current?.contains(event.target as HTMLElement)) {
-        console.log('in if');
-        packageOptionsRef.current?.removeAttribute('tabindex');
-        packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.removeAttribute('tabindex'));
-        setCanTabIntoOptions(true);
-      } else if (event.type === 'focusout' && !packageOptionsRef.current?.contains(event.relatedTarget as HTMLElement)) {
-        console.log('in else');
-        packageOptionsRef.current?.setAttribute('tabindex', '-1');
-        packageOptionsRef.current?.querySelectorAll('input,label')?.forEach((element) => element.setAttribute('tabindex', '-1'));
-        setCanTabIntoOptions(false);
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
+    emailInputRef.current?.focus();
+  }, [emailInputRef]);
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (packageOptionsRef.current.contains(document.activeElement) && event.key === 'Enter') {
-        event.preventDefault();
-        event.stopPropagation();
+  const [didSubmit, setDidSubmit] = React.useState(false);
+  const onSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setDidSubmit(true);
+  }, []);
 
-        const iframe = packageOptionsRef.current.parentElement.parentElement
-          .querySelector('.StripeElement iframe') as HTMLIFrameElement;
-
-        iframe?.focus();
-      }
-    };
-
-    if (props.isOpen) {
-      window.addEventListener('keydown', onKeyDown, true);
-      document.addEventListener('focusin', onFocusEvent);
-      document.addEventListener('focusout', onFocusEvent);
-      packageOptionsRef.current?.querySelector('input')?.focus();
-    }
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown, true);
-      document.removeEventListener('focusin', onFocusEvent);
-      document.removeEventListener('focusout', onFocusEvent);
-    };
-  }, [props.isOpen]);
-
-  useNextPreviousShortcuts(goToOption, canTabIntoOptions);
+  useNextPreviousShortcuts(goToOption, { canUseArrows: false, canUseChars: false });
 
   return (
     <modal.Modal {...props} aria-label="Purchase The Tale of the Big Computer">
       <SmallTitle />
-      <stripe.Context amount={PACKAGE_CONFIGS[selectedOption].price}>
-        <form onSubmit={(event) => event.preventDefault()}>
-          <section>
-            <h4>Select your presales package:</h4>
-            <fieldset ref={packageOptionsRef}>
-              {data.PACKAGE_OPTIONS.map(option => {
-                const { label } = PACKAGE_CONFIGS[option];
+      <form onSubmit={onSubmit}>
+        <section>
+          <h4>
+              Select your presales package:
+            <span className="instruction">
+              {/* todo - instruction-style text */}
+              {' '}(&lt;tab&gt; to toggle)
+            </span>
+          </h4>
+          <fieldset className="flex" ref={packageOptionsRef}>
+            {data.PACKAGE_OPTIONS.map(option => {
+              const { label, price } = PACKAGE_CONFIGS[option];
 
-                return (
-                  <label key={option}>
-                    <input
-                      type="radio"
-                      name="package_option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={onSelectOption}
-                    />
-                    {typeof label === 'string' ? <span>{label}</span> : label}
-                  </label>
-                );
-              })}
-            </fieldset>
-          </section>
-          <section>
-            <h4>Goodies</h4>
+              return (
+                <label className="flex" key={option} aria-selected={selectedOption === option}>
+                  <input
+                    type="radio"
+                    name="package_option"
+                    value={option}
+                    checked={selectedOption === option}
+                    onChange={onSelectOption}
+                  />
+                  {typeof label === 'string' ? <span>{label}</span> : label}
+                    &nbsp;(${Math.round(price / 100)})
+                </label>
+              );
+            })}
+          </fieldset>
+        </section>
+        <section>
+          <label className="w-full">
+            <h4>What is your email address?
+              <span className="instruction">
+                {/* todo - instruction-style text */}
+                {' '}(&lt;enter&gt; to continue)
+              </span>
+            </h4>
+            {/* todo - add validation */}
+            <input required type={/* todo - `email` on mobile */'text'}
+              ref={emailInputRef}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setCursorPosition(e.target.selectionStart);
+              }} />
+            <span className="relative w-full">{email.slice(0, cursorPosition)}&zwj;<Cursor className="run-animation" />&zwj;{email.slice(cursorPosition)}</span>
+          </label>
+        </section>
+        {didSubmit ? null : (<>
+          <section className="border-dashed border-2 mt-3 p-2">
+            <h4 className="mb-1 underline" >Goodies</h4>
             <ul>
               {/* todo - tooltip */}
               <li>Unlimited* DRM-free ebook downloads</li>
               <li>1x copy of the book, once printed (hardcover or softcover)</li>
               <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>
-              1x copy of a limited, numbered edition of the book (0x00 - 0xff)
+            1x copy of a limited, numbered edition of the book (0x00 - 0xff)
               </text.StrikeThrough>
               {/* todo - tooltip for above =  printed by a modified IBM Selectric I */}
-              <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>More goodies to be announced...</text.StrikeThrough>
             </ul>
           </section>
-          <section>
-            <h4>Shipping</h4>
+          <section className="border-dashed border-2 mt-3 p-2">
+            <h4 className="mb-1 underline">Shipping</h4>
             <ul>
               <text.StrikeThrough asContainer="li" isStruckThrough={selectedOption !== '1byte'}>Free shipping</text.StrikeThrough>
               <li>Free pickup at participating local bookstores (US + Canada only)</li>
             </ul>
           </section>
           <section>
-            <h4>Customer</h4>
-            <label>
-              Email address
-              <input type="email" required placeholder="ada@lovela.ce" />
-            </label>
-          </section>
-          {/*<section>
-            <h4>Payment</h4>
-            <stripe.Payment onEscape={focusCurrentOption} />
-          </section>
-          */}
-          <button type="submit">
+            <button type="submit">
             Proceed to payment (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
-          </button>
-        </form>
-      </stripe.Context>
+            </button>
+          </section>
+        </>)}
+      </form>
+      {!didSubmit ? null : (<>
+        <stripe.Context amount={PACKAGE_CONFIGS[selectedOption].price}>
+          <stripe.Form email={email}>
+            <section>
+              <h4>Payment</h4>
+              <stripe.Payment options={{ fields: { billingDetails: { email: 'never' } } }} />
+            </section>
+            <section>
+              <button type="submit">
+            Purchase {PACKAGE_CONFIGS[selectedOption].label} package (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
+              </button>
+            </section>
+          </stripe.Form>
+        </stripe.Context>
+      </>)}
     </modal.Modal>
   );
 };
@@ -176,111 +252,96 @@ export const Modal = styled(InnerModal)`
   // todo - linaria'ify
   --form-control-color: hotpink;
 
-  ${SmallTitle} + p {
+  ${SmallTitle} + * {
     margin-top: 1rem;
+  }
+
+  ${SmallTitle} + * ~ * {
+    margin-top: 0.5rem;
+  }
+
+  h4 {
+    font-variation-settings: 'wght' 650, 'wdth' 120;
+  }
+
+  .instruction {
     font-size: 0.875rem;
     opacity: 0.7;
   }
 
-  ${SmallTitle} + p ~ *, ol ~ * {
-    margin-top: 0.5rem;
-  }
-
   fieldset {
-    @apply flex justify-center;
-
-    &::after {
-      @apply absolute right-0;
-
-      content: 'Press <esc> to refocus options';
-    }
-
-    &:focus-within::after {
-      content: 'Press <enter> to select';
-    }
+    @apply flex;
   }
 
-  fieldset > label {
-    @apply flex;
+  label {
     width: fit-content;
 
-    &:focus, &:focus-within {
-      color: var(--form-control-color);
-    }
-
     &:hover {
-      @apply cursor-pointer underline;
-
-      color: ${({ isOpen }) => isOpen ? 'crimson' : 'inherit'};
+      @apply cursor-pointer;
     }
 
-    &[aria-selected="true"] {
-      @apply underline;
-      color: ${({ isOpen }) => isOpen ? 'hotpink' : 'inherit'};
+    > input:first-child {
+      margin-right: 0.5rem;
     }
 
     + label {
-      margin-left: 2rem;
+      margin-left: 1rem;
     }
+  }
 
-    > .price {
-      &::before {
-        content: '(';
-        filter: opacity(0.2) brightness(5.5);
-      }
+  input {
+    appearance: none;
+    // clear default display
+    background-color: transparent;
+    color: inherit;
+    caret-color: transparent;
+    // todo - mobile
+    width: 0;
 
-      &::after {
-        content: ')';
-        filter: opacity(0.2) brightness(5.5);
-      }
+    &::selection {
+      background-color: white;
+      color: black;
+    }
+  }
 
-      filter: saturate(0.5) brightness(0.9) hue-rotate(120deg);
+  input[type="text"] {
+    + span {
+      @apply inline-block;
+      word-wrap: break-word;
     }
   }
 
   input[type="radio"] {
-    // clear default display
     appearance: none;
-    background-color: transparent;
-    margin: 0;
-
-    // style a circle relative to the font size
-    font: inherit;
-    color: currentColor;
-    width: 1.15em;
-    height: 1.15em;
-    border: 0.15em solid currentColor;
-    border-radius: 50%;
-    transform: translateY(0.17em) translateX(-0.65em);
+    width: fit-content;
 
     // align our ::before content with the circle border
     display: grid;
     place-content: center;
 
-    // style the default fill; with scale === 0 to hide-by-default
+    // style the radio button alternative
     &::before {
-      content: "";
-      width: 0.65em;
-      height: 0.65em;
-      border-radius: 50%;
-      transform: scale(0);
-      transition: 0.07s transform ease-in;
-      box-shadow: inset 1em 1em var(--form-control-color);
+      content: '🤖';
+      transform: scale(0.4);
+      transition: 0.1s transform ease-out;
     }
 
-    // show our fill when checked
+    // grow our head when checked
     &:checked::before {
-      transform: scale(1);
+      transform: scale(1.5);
+      transition-delay: 0.07s;
     }
 
-    // add an extra "focus" ring
-    :focus {
-      outline: max(2px, 0.15em) solid currentColor;
-      outline-offset: max(2px, 0.15em);
-    }
-
+    // underline focused, hovered, & checked text
+    :focus + *,
+    :hover + *,
     &:checked + * {
-      text-decoration: underline;
+      @apply underline;
+    }
+
+    // set color on checked text
+    &:checked + * {
+      color: var(--form-control-color);
     }
   }
 `;
