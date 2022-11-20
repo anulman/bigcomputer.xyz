@@ -23,10 +23,32 @@ export const Context = ({ key, options, amount, children }: React.PropsWithChild
       return;
     }
 
+    const findOrCreatePaymentIntent = async (lastPaymentIntentId?: string): Promise<{ id: string; clientSecret: string }> => {
+      // todo - fallback to a lazy import if needed - old mobile safari does not support this
+      const idempotencyKey = crypto.randomUUID();
+      const res = await fetch('/api/orders', {
+        method: lastPaymentIntentId ? 'GET' : 'POST',
+        body: lastPaymentIntentId
+          ? undefined
+          : JSON.stringify({ amount, idempotencyKey }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to create payment intent: ${await res.text()}`);
+      }
+
+      const json = await res.json();
+
+      if (lastPaymentIntentId && json.isComplete) {
+        return findOrCreatePaymentIntent();
+      }
+
+      return json;
+    };
+
     const lastPaymentIntentId = cookies.getLatest().PaymentIntentId;
-    fetch('/api/orders', { method: lastPaymentIntentId ? 'GET' : 'POST', body: lastPaymentIntentId ? undefined : JSON.stringify({ amount }) })
-      .then((res) => res.ok && res.json())
-      .then((data) => {
+    findOrCreatePaymentIntent(lastPaymentIntentId)
+      .then((data: { id: string, clientSecret: string }) => {
         CLIENT_SECRET_CACHE.set(data.id, data.clientSecret);
         cookies.setCookie('PaymentIntentId', data.id);
         setClientSecret(data.clientSecret);
@@ -34,8 +56,11 @@ export const Context = ({ key, options, amount, children }: React.PropsWithChild
   }, []);
 
   React.useEffect(() => {
+    // todo - fallback to a lazy import if needed - old mobile safari does not support this
+    const idempotencyKey = crypto.randomUUID();
+
     if (cookies.getLatest().PaymentIntentId) {
-      fetch('/api/orders', { method: 'PATCH', body: JSON.stringify({ amount }) });
+      fetch('/api/orders', { method: 'PATCH', body: JSON.stringify({ amount, idempotencyKey }) });
     }
   }, [amount]);
 
