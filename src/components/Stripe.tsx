@@ -70,3 +70,52 @@ export const Context = ({ key, options, amount, children }: React.PropsWithChild
 };
 
 export const Payment = stripe.PaymentElement;
+
+export const Form = ({ email, children }: React.PropsWithChildren<{ email: string }>) => {
+  const stripeApi = stripe.useStripe();
+  const elements = stripe.useElements();
+  // todo - expose via context?
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isSubmitting, setIsSubmitting] = React.useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_didSucceed, setDidSucceed] = React.useState(false);
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    // todo - set a proper `return_url`
+    const result = await stripeApi.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: 'https://bigcomputer.xyz',
+        payment_method_data: { billing_details: { email } },
+      },
+      redirect: 'if_required',
+    });
+
+    setIsSubmitting(false);
+
+    if (result.error) {
+      const loggable = {
+        ..._.omit(result.error, 'payment_intent', 'payment_method'),
+        payment_intent_id: result.error.payment_intent?.id,
+        payment_method_id: result.error.payment_method?.id
+      };
+
+      // todo - log to sentry or similar
+      console.error(loggable);
+
+      // TODO - Show error to customer (for example, payment details incomplete)
+    } else {
+      // TODO - handle successful payment, with and without redirects
+      setDidSucceed(true);
+      console.log('success!');
+      // Your customer will be redirected to your `return_url`. For some payment
+      // methods like iDEAL, your customer will be redirected to an intermediate
+      // site first to authorize the payment, then redirected to the `return_url`.
+    }
+  };
+
+  return <form onSubmit={onSubmit}>{children}</form>;
+};
