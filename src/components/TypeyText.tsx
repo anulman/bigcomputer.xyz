@@ -73,9 +73,9 @@ const InnerContent = (
     startDelayBeats = DEFAULT_START_DELAY_BEATS,
     onChildWindupWillPlay,
     onChildWindupCompleted,
-    innerRef: divRef,
+    innerRef: divRef = React.useRef<HTMLDivElement>(null),
     ...props
-  }: Props & { innerRef: React.MutableRefObject<HTMLDivElement> },
+  }: Props & { innerRef?: React.MutableRefObject<HTMLDivElement> },
 ) => {
   const [hasStarted, setHasStarted] = React.useState(false);
   const [numCompleted, setNumCompleted] = React.useState(0);
