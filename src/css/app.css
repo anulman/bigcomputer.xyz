@@ -1,9 +1,19 @@
+@font-face {
+  font-family: "Inconsolata";
+  src: url("/assets/fonts/Inconsolata/Inconsolata-VariableFont_wdth,wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-stretch: 50% 200%;
+  font-style: normal;
+}
+/* todo - add fallbacks for browsers that don't support variable fonts */
+
 html,
 body {
   background: black;
   color: rgba(255, 255, 255, 0.8);
-  font-family: Courier;
+  font-family: Inconsolata, Consolas, Courier;
   font-size: 16px;
+  font-variation-settings: 'wght' 300, 'wdth' 105;
 }
 
 button:focus, a:focus, :focus {
