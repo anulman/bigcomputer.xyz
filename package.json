@@ -14,6 +14,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@mapbox/search-js-core": "^1.0.0-beta.14",
     "@reach/dialog": "^0.17.0",
     "@reach/visually-hidden": "^0.16.0",
     "@react-spring/web": "^9.5.2",
