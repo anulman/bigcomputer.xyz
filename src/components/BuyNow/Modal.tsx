@@ -12,12 +12,7 @@ import * as modal from '@src/parts/Modal';
 import * as ASCII from '@src/parts/ASCII';
 import * as input from '@src/parts/Input';
 import * as text from '@src/parts/Text';
-import * as radar from '@src/utils/radar';
-
-if (typeof window !== 'undefined') {
-  // @ts-expect-error 2304
-  window.searchRadar = radar.search;
-}
+import * as mapbox from '@src/utils/mapbox';
 
 const DEFAULT_PACKAGE = '5bit';
 
@@ -227,7 +222,7 @@ const SecondFormPart = ({ onSubmit }: {
         rx.filter((value) => shouldTryAutocomplete(value)),
         rx.throttleTime(50, rxjs.asyncScheduler, { leading: true, trailing: true }),
         rx.switchMap((value) => {
-          const results = radar.search(value);
+          const results = mapbox.search(value);
 
           return rxjs.from(results).pipe(rx.finalize(() => results.abort()));
         }),
@@ -236,7 +231,7 @@ const SecondFormPart = ({ onSubmit }: {
         rx.filter((value) => !shouldTryAutocomplete(value)),
         rx.map(() => []),
       )
-    ) as rxjs.Observable<radar.Address[]>,
+    ) as rxjs.Observable<mapbox.Address[]>,
     [],
   );
 
@@ -245,9 +240,9 @@ const SecondFormPart = ({ onSubmit }: {
     const address = suggestions[currentOptionIndex];
     const formattedAddress = new FormData(event.target as HTMLFormElement).get('address');
 
-    if (address?.formattedAddress !== formattedAddress) {
+    if (address?.full_address !== formattedAddress) {
       // TODO - sentry
-      console.error('Address mismatch', address.formattedAddress, formattedAddress);
+      console.error('Address mismatch', address.full_address, formattedAddress);
     }
 
     // TODO - patch selected address into the order
@@ -298,15 +293,15 @@ const SecondFormPart = ({ onSubmit }: {
         <input.TypeyInput required type="search" onChange={(e) => addressValueRef$.current.next(e.target.value)} />
       </label>
       <ul ref={optionsRef}>
-        {suggestions.map((suggestion, index) => <li key={suggestion.formattedAddress}>
+        {suggestions.map((suggestion, index) => <li key={suggestion.full_address}>
           <label>
             <input
               type="radio"
               name="address"
               checked={index === currentOptionIndex}
               onChange={() => setCurrentOptionIndex(index)}
-              value={suggestion.formattedAddress} />
-            <span>{suggestion.formattedAddress}</span>
+              value={suggestion.full_address} />
+            <span>{suggestion.full_address}</span>
             {index !== currentOptionIndex ? null : <span className="instruction">
               {' '}(&lt;enter&gt; to select)
             </span>}

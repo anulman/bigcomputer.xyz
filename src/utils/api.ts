@@ -2,7 +2,7 @@ import type * as stripeJs from '@stripe/stripe-js';
 import type * as stripeApi from 'stripe';
 
 import * as data from '@src/data/stripe';
-import type * as radar from '@src/utils/radar';
+import type * as mapbox from '@src/utils/mapbox';
 
 type LineItem = { product: ProductId; quantity: number };
 type ProductId = typeof data.PACKAGE_CONFIGS[data.PackageOption]['id'];
@@ -52,16 +52,14 @@ const itemsToLineItems = (items: ProductOrLineItems): LineItem[] => (
     : [{ product: items, quantity: 1 }]
 );
 
-const addressToShippingAddress = (address: radar.Address): stripeJs.Order.Shipping['address'] => {
-  const { number, street, city, stateCode, postalCode, countryCode } = address;
-
+const addressToShippingAddress = (address: mapbox.Address): stripeJs.Order.Shipping['address'] => {
   return {
-    line1: `${number} ${street}`,
-    line2: null,
-    city,
-    state: stateCode,
-    postal_code: postalCode,
-    country: countryCode,
+    line1: address.address_line1,
+    line2: address.address_line2,
+    city: address.place,
+    state: address.region_code,
+    postal_code: address.postcode,
+    country: address.country_code,
   };
 };
 
@@ -112,7 +110,7 @@ export const createOrder = async (items: ProductOrLineItems) => {
 
 export const patchOrder = async (
   id: string,
-  patchData: { email?: string; items?: ProductOrLineItems; address?: radar.Address, shouldSubmit?: boolean },
+  patchData: { email?: string; items?: ProductOrLineItems; address?: mapbox.Address, shouldSubmit?: boolean },
 ) => {
   const lineItems = patchData.items ? itemsToLineItems(patchData.items) : undefined;
   const shippingAddress = patchData.address ? addressToShippingAddress(patchData.address) : undefined;
