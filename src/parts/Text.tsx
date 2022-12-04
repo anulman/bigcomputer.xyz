@@ -17,6 +17,10 @@ const Container = styled.span`@apply relative;`;
 
 const priceFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'usd' });
 export const Price = ({ amount }: { amount: number }) => <>{priceFormatter.format(amount / 100)}</>;
+export const Instruction = styled.span`
+  font-size: 0.875rem;
+  opacity: 0.7;
+`;
 
 const InnerStrikeThrough = (props: Parameters<typeof Container>[0] & Props) => {
   const springs = spring.useTrail(props.children?.length ?? 0, {

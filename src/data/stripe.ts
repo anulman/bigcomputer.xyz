@@ -26,3 +26,5 @@ export const PACKAGE_CONFIGS: Readonly<PackageConfig<PackageOption>> = Object.fr
     id: isProduction ? 'prod_MFFtfTEy1dOT1h' : 'prod_MFGCyTa8kxreCM',
   },
 } as const);
+
+export const DEFAULT_PACKAGE = '5bit';
