@@ -211,7 +211,6 @@ export default function HomePage(): JSX.Element {
   </Page>;
 }
 
-// todo - override footnote <Display> with buy now content when in buy now mode!!
 const Footnotes = {
   arpanet: <>
     <p>The ARPAnet was the military research project that preceded web1 (aka &quot;the internet&quot;).</p>

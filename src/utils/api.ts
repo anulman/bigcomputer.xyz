@@ -95,7 +95,6 @@ export const findOrder = async (id: string) => {
 export const createOrder = async (items: ProductOrLineItems) => {
   const lineItems = itemsToLineItems(items);
   const idempotencyKey = generateIdempotencyKey();
-  // todo - use id in URL
   const res = await fetch('/api/orders', {
     method: 'POST',
     body: JSON.stringify({ idempotencyKey, lineItems })

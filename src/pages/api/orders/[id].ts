@@ -91,7 +91,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error(err);
       res.status(500).send('Unknown error while submitting order');
     }
-    // todo - call reopen or cancel api
   } else {
     res.status(501).send(`Method ${req.method} not implemented`);
   }
