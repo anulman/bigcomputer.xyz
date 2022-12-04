@@ -108,7 +108,8 @@ export default function HomePage(): JSX.Element {
   const [avatarSize, setAvatarSize] = React.useState(MIN_AVATAR_SIZE);
   const [isShowingFootnote, setIsShowingFootnote] = React.useState(false);
   const [isShowingBuyNowButton, setIsShowingBuyNowButton] = React.useState(false);
-  const [isShowingBuyNowModal, setIsShowingBuyNowModal] = React.useState(false);
+  // todo - read these from qps
+  const [isShowingBuyNowModal, setIsShowingBuyNowModal] = React.useState(true);
 
   const onHideFootnote = React.useCallback(() => setIsShowingFootnote(false), [setIsShowingFootnote]);
   const onShowFootnote = React.useCallback(() => setIsShowingFootnote(true), [setIsShowingFootnote]);

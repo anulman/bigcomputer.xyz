@@ -1,86 +1,122 @@
 import _ from 'lodash';
 import * as React from 'react';
+import * as rxjs from 'rxjs';
+import * as rx from 'rxjs/operators';
 
 import type * as stripeJs from '@stripe/stripe-js';
 import * as stripePure from '@stripe/stripe-js/pure';
 import * as stripe from '@stripe/react-stripe-js';
 
+import { createSafeContext, useSafeContext } from '@src/hooks/use-safe-context';
+import * as api from '@src/utils/api';
 import * as cookies from '@src/utils/cookies';
 
-const DEFAULT_STRIPE_KEY = process.env.STRIPE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-const CLIENT_SECRET_CACHE = new Map<string, string>();
+const SafeOrderContext = createSafeContext<{
+  order$: rxjs.Observable<api.Order>;
+  emailRef: React.RefObject<string>,
+  patchOrder: (patchData: Parameters<typeof api.patchOrder>[1]) => Promise<api.Order>;
+}>();
+
+export const useOrderContext = () => useSafeContext(SafeOrderContext);
 
 // by memoizing _outside_ of React, we can avoid re-initializing Stripe even
 // while reusing the underlying `<Elements>` component.
-const loadStripe = _.memoize((key: string) => stripePure.loadStripe(key));
+const loadStripe = _.memoize((key: string) => stripePure.loadStripe(key, { apiVersion: '2022-11-15;orders_beta=v4' }));
 
-export const Context = ({ key, options, amount, children }: React.PropsWithChildren<{ key?: `pk_${string}`; amount: number; options?: stripeJs.StripeElementsOptions }>) => {
-  const stripePromise = loadStripe(key ?? DEFAULT_STRIPE_KEY);
-  const [clientSecret, setClientSecret] = React.useState(() => CLIENT_SECRET_CACHE.get(cookies.getLatest().PaymentIntentId));
-
-  React.useEffect(() => {
-    if (clientSecret !== undefined) {
+export const OrderContext = ({
+  defaultItems,
+  children
+}: React.PropsWithChildren<{
+  defaultItems: api.ProductOrLineItems;
+}>) => {
+  const orderRef$ = React.useRef(new rxjs.Subject<api.Order>());
+  const emailRef = React.useRef<string>();
+  const orderId = React.useRef(cookies.getLatest().OrderId);
+  const patchOrder = React.useCallback((patchData: Parameters<typeof api.patchOrder>[1]) => {
+    if (!orderId.current) {
+      console.warn('Tried to patch order without an order ID');
       return;
     }
 
-    const findOrCreatePaymentIntent = async (lastPaymentIntentId?: string): Promise<{ id: string; clientSecret: string }> => {
-      // todo - fallback to a lazy import if needed - old mobile safari does not support this
-      const idempotencyKey = crypto.randomUUID();
-      const res = await fetch('/api/orders', {
-        method: lastPaymentIntentId ? 'GET' : 'POST',
-        body: lastPaymentIntentId
-          ? undefined
-          : JSON.stringify({ amount, idempotencyKey }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to create payment intent: ${await res.text()}`);
+    const promise = api.patchOrder(orderId.current, patchData);
+    promise.then((order) => {
+      if (patchData.email) {
+        emailRef.current = patchData.email;
       }
 
-      const json = await res.json();
+      orderRef$.current.next(order);
+    }).catch(console.error);
 
-      if (lastPaymentIntentId && json.isComplete) {
-        return findOrCreatePaymentIntent();
-      }
-
-      return json;
-    };
-
-    const lastPaymentIntentId = cookies.getLatest().PaymentIntentId;
-    findOrCreatePaymentIntent(lastPaymentIntentId)
-      .then((data: { id: string, clientSecret: string }) => {
-        CLIENT_SECRET_CACHE.set(data.id, data.clientSecret);
-        cookies.setCookie('PaymentIntentId', data.id);
-        setClientSecret(data.clientSecret);
-      });
+    return promise;
   }, []);
 
   React.useEffect(() => {
-    // todo - fallback to a lazy import if needed - old mobile safari does not support this
-    const idempotencyKey = crypto.randomUUID();
+    const createOrder = () => api.createOrder(defaultItems)
+      .then((order) => {
+        cookies.setCookie('OrderId', order.id);
+        return order;
+      });
 
-    if (cookies.getLatest().PaymentIntentId) {
-      fetch('/api/orders', { method: 'PATCH', body: JSON.stringify({ amount, idempotencyKey }) });
-    }
-  }, [amount]);
+    const orderPromise = orderId.current
+      ? api.findOrder(orderId.current)
+        .catch(createOrder)
+        // order status will always be `open` if just-created
+        .then((order) => order.status === 'open' ? order : createOrder())
+      : createOrder();
 
-  return <stripe.Elements stripe={!clientSecret ? null : stripePromise} options={{ clientSecret, ...options }}>
+    orderPromise
+      .then((order) => {
+        orderRef$.current.next(order);
+        orderId.current = order.id;
+      })
+      .catch(console.error);
+  }, []);
+
+  const value = React.useMemo(() => ({
+    order$: orderRef$.current.pipe(rx.distinctUntilChanged()),
+    emailRef,
+    patchOrder
+  }), [patchOrder]);
+
+  // todo - safecontext
+  return <SafeOrderContext.Provider value={value}>
     {children}
+  </SafeOrderContext.Provider>;
+};
+
+export const PaymentElement = stripe.PaymentElement;
+export const PaymentForm = ({
+  key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  options,
+  paymentIntent,
+  children,
+  ...props
+}: Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'> & React.PropsWithChildren<{
+  key?: string;
+  options?: stripeJs.StripeElementsOptions;
+  paymentIntent: api.Order['paymentIntent']
+}>) => {
+  const stripePromise = loadStripe(key);
+
+  return <stripe.Elements stripe={!paymentIntent?.clientSecret ? null : stripePromise} options={{ clientSecret: paymentIntent?.clientSecret, ...options }}>
+    <InnerPaymentForm {...props}>
+      {children}
+    </InnerPaymentForm>
   </stripe.Elements>;
 };
 
-export const Payment = stripe.PaymentElement;
-
-export const Form = ({ email, children }: React.PropsWithChildren<{ email: string }>) => {
+const InnerPaymentForm = ({ children, ...props }: React.PropsWithChildren<Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'>>) => {
   const stripeApi = stripe.useStripe();
   const elements = stripe.useElements();
+  const { emailRef } = useOrderContext();
+
   // todo - expose via context?
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isSubmitting, setIsSubmitting] = React.useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_didSucceed, setDidSucceed] = React.useState(false);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
 
@@ -89,7 +125,7 @@ export const Form = ({ email, children }: React.PropsWithChildren<{ email: strin
       elements,
       confirmParams: {
         return_url: 'https://bigcomputer.xyz',
-        payment_method_data: { billing_details: { email } },
+        payment_method_data: { billing_details: { email: emailRef.current } },
       },
       redirect: 'if_required',
     });
@@ -115,7 +151,7 @@ export const Form = ({ email, children }: React.PropsWithChildren<{ email: strin
       // methods like iDEAL, your customer will be redirected to an intermediate
       // site first to authorize the payment, then redirected to the `return_url`.
     }
-  };
+  }, [stripeApi, elements]);
 
-  return <form onSubmit={onSubmit}>{children}</form>;
+  return <form onSubmit={onSubmit} {...props}>{children}</form>;
 };

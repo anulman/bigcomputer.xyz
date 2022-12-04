@@ -1,65 +1,86 @@
 import * as React from 'react';
 import { styled } from '@linaria/react';
+import * as rxjs from 'rxjs';
+import * as rx from 'rxjs/operators';
+import * as rxHooks from 'observable-hooks';
 
-import * as data from '@src/data';
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
 
+import * as data from '@src/data/';
 import * as stripe from '@src/components/Stripe';
 import * as modal from '@src/parts/Modal';
 import * as ASCII from '@src/parts/ASCII';
+import * as input from '@src/parts/Input';
 import * as text from '@src/parts/Text';
+import * as radar from '@src/utils/radar';
 
-const PACKAGE_CONFIGS: Readonly<Record<
-  data.PackageOption,
-  Readonly<{ label: React.ReactNode; price: number }>
->> = Object.freeze({
-  '5bit': { label: '5-bit', price: 3200 },
-  '1byte': { label: '1-byte', price: 25600 },
-} as const);
+if (typeof window !== 'undefined') {
+  // @ts-expect-error 2304
+  window.searchRadar = radar.search;
+}
+
+const DEFAULT_PACKAGE = '5bit';
 
 const SmallTitle = styled(ASCII.Title)`
   @apply text-center;
   font-size: 0.5rem;
 `;
 
-const Cursor = styled.span<{ position?: number }>`
-  @apply inline-block;
+const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) => {
+  return (
+    <modal.Modal {...props} aria-label="Purchase The Tale of the Big Computer">
+      <SmallTitle />
+      <stripe.OrderContext defaultItems={data.PACKAGE_CONFIGS[DEFAULT_PACKAGE].id}>
+        <OrderForm />
+      </stripe.OrderContext>
+    </modal.Modal>
+  );
+};
 
-  position: absolute;
-  background: var(--text-color, rgba(255, 255, 255, 0.8));
-  content: '';
-  width: 1ch;
-  height: 1rem;
+const StyledFirstForm = styled.form`
+  input[type="radio"] {
+    appearance: none;
+    width: fit-content;
 
-  margin-top: 3px;
-  margin-bottom: -4px;
+    // align our ::before content with the circle border
+    display: grid;
+    place-content: center;
 
-  &.run-animation {
-    animation: blink 1s step-end infinite;
+    // style the radio button alternative
+    &::before {
+      content: '🤖';
+      transform: scale(0.4);
+      transition: 0.1s transform ease-out;
+    }
+
+    // grow our head when checked
+    &:checked::before {
+      transform: scale(1.5);
+      transition-delay: 0.07s;
+    }
+
+    // underline focused, hovered, & checked text
+    :focus + *,
+    :hover + *,
+    &:checked + * {
+      @apply underline;
+    }
+
+    // set color on checked text
+    &:checked + * {
+      color: var(--form-control-color);
+    }
   }
-
-  @keyframes blink {
-    0% {
-      opacity: 1.0;
-    }
-
-    25% {
-      opacity: 0.0;
-    }
-
-    75% {
-      opacity: 1.0;
-    }
-  }
-}
 `;
 
-const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) => {
+const FirstFormPart = ({ onSelectedOption, onSubmit, ...props }: {
+  onSelectedOption: (option: data.PackageOption) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+} & React.HTMLAttributes<HTMLFormElement>) => {
   const packageOptionsRef = React.useRef<HTMLFieldSetElement>(null);
-  const emailInputRef = React.useRef<HTMLInputElement>(null);
-  const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(data.PACKAGE_OPTIONS[0]);
-  const [email, setEmail] = React.useState<string>('');
-  const [cursorPosition, setCursorPosition] = React.useState<number>(0);
+  const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(DEFAULT_PACKAGE);
+  const { patchOrder } = stripe.useOrderContext();
+
   const goToOption = React.useCallback((direction: 'next' | 'previous') => {
     const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
     if (!options) {
@@ -81,128 +102,241 @@ const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) 
       }
     });
 
-    emailInputRef.current?.focus();
+    // todo - merge these!
+    onSelectedOption(newOption.value as data.PackageOption);
+    patchOrder({ items: data.PACKAGE_CONFIGS[newOption.value as data.PackageOption].id });
+    // emailInputRef.current?.focus();
   }, [selectedOption]);
-
-  React.useEffect(() => {
-    const updateCursor = () => requestAnimationFrame(() => setCursorPosition(emailInputRef.current?.selectionStart ?? 0));
-
-    document.addEventListener('keydown', updateCursor, { passive: true });
-    document.addEventListener('mousedown', updateCursor, { passive: true });
-
-    () => {
-      document.removeEventListener('keydown', updateCursor);
-      document.removeEventListener('mousedown', updateCursor);
-    };
-  }, []);
-
-  // manage cursor blinking
-  React.useEffect(() => {
-    const cursor = emailInputRef.current
-      ?.parentElement
-      ?.querySelector(`.${Cursor.__linaria.className}`) as HTMLSpanElement;
-
-    if (!cursor) {
-      return;
-    }
-
-    cursor.classList.remove('run-animation');
-    requestAnimationFrame(() => {
-      const { x: cursorX, y: cursorY } = cursor.getBoundingClientRect();
-      const { x: boundingX, y: boundingY, width: boundingWidth } = cursor.parentElement.getBoundingClientRect();
-
-      cursor.style.left = null;
-      cursor.style.transform = null;
-
-      cursor.classList.add('run-animation');
-
-      console.log(cursorX, boundingX + boundingWidth);
-      if (cursorX > (boundingX + boundingWidth)) {
-        console.log('hieeeiei');
-        cursor.style.left = '0';
-        cursor.style.transform = `translateY(calc(${cursorY - boundingY + 1}px + 1.5rem))`;
-      }
-    });
-  }, [cursorPosition]);
-
-  // const focusCurrentOption = React.useCallback(() => {
-  //   const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
-  //   const currentOptionIndex = data.PACKAGE_OPTIONS.findIndex((option) => option === selectedOption);
-
-  //   options[currentOptionIndex].focus();
-  // }, [selectedOption]);
 
   const onSelectOption = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const option = event.target.value as data.PackageOption;
 
     if (option && data.PACKAGE_OPTIONS.includes(option)) {
-      setSelectedOption(option);
+      patchOrder({ items: data.PACKAGE_CONFIGS[option].id });
     }
   }, []);
 
-  React.useEffect(() => {
-    emailInputRef.current?.focus();
-  }, [emailInputRef]);
-
-  const [didSubmit, setDidSubmit] = React.useState(false);
-  const onSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+  // todo - rehydrate email?
+  const wrappedOnSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setDidSubmit(true);
-  }, []);
 
-  useNextPreviousShortcuts(goToOption, { canUseArrows: false, canUseChars: false });
+    const formData = new FormData(event.target as HTMLFormElement);
+    const option = formData.get('package_option');
+    const email = formData.get('email') as string;
+
+    if (option !== selectedOption) {
+      console.error('Selection mismatch', option, selectedOption);
+    }
+
+    patchOrder({ email, items: data.PACKAGE_CONFIGS[selectedOption].id })
+      .then(() => onSubmit(event));
+  }, [onSubmit]);
+
+  useNextPreviousShortcuts(goToOption, { useArrows: false, canUseChars: false });
 
   return (
-    <modal.Modal {...props} aria-label="Purchase The Tale of the Big Computer">
-      <SmallTitle />
-      <form onSubmit={onSubmit}>
-        <section>
-          <h4>
-              Select your presales package:
+    <StyledFirstForm onSubmit={wrappedOnSubmit} {...props}>
+      <section>
+        <h4>
+          Select your presales package:
+          <span className="instruction">
+            {/* todo - instruction-style text */}
+            {' '}(&lt;tab&gt; to toggle)
+          </span>
+        </h4>
+        <fieldset className="flex" ref={packageOptionsRef}>
+          {data.PACKAGE_OPTIONS.map(option => {
+            const { label, price } = data.PACKAGE_CONFIGS[option];
+
+            return (
+              <label className="flex" key={option} aria-selected={selectedOption === option}>
+                <input
+                  type="radio"
+                  name="package_option"
+                  value={option}
+                  checked={selectedOption === option}
+                  onChange={onSelectOption}
+                />
+                {typeof label === 'string' ? <span>{label}</span> : label}
+                &nbsp;(${Math.round(price / 100)})
+              </label>
+            );
+          })}
+        </fieldset>
+      </section>
+      <section>
+        <label className="w-full">
+          <h4>What is your email address?
             <span className="instruction">
               {/* todo - instruction-style text */}
-              {' '}(&lt;tab&gt; to toggle)
+              {' '}(&lt;enter&gt; to continue)
             </span>
           </h4>
-          <fieldset className="flex" ref={packageOptionsRef}>
-            {data.PACKAGE_OPTIONS.map(option => {
-              const { label, price } = PACKAGE_CONFIGS[option];
+          <input.TypeyInput name="email" required />
+        </label>
+      </section>
+    </StyledFirstForm>
+  );
+};
 
-              return (
-                <label className="flex" key={option} aria-selected={selectedOption === option}>
-                  <input
-                    type="radio"
-                    name="package_option"
-                    value={option}
-                    checked={selectedOption === option}
-                    onChange={onSelectOption}
-                  />
-                  {typeof label === 'string' ? <span>{label}</span> : label}
-                    &nbsp;(${Math.round(price / 100)})
-                </label>
-              );
-            })}
-          </fieldset>
-        </section>
-        <section>
-          <label className="w-full">
-            <h4>What is your email address?
-              <span className="instruction">
-                {/* todo - instruction-style text */}
-                {' '}(&lt;enter&gt; to continue)
-              </span>
-            </h4>
-            {/* todo - add validation */}
-            <input required type={/* todo - `email` on mobile */'text'}
-              ref={emailInputRef}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setCursorPosition(e.target.selectionStart);
-              }} />
-            <span className="relative w-full">{email.slice(0, cursorPosition)}&zwj;<Cursor className="run-animation" />&zwj;{email.slice(cursorPosition)}</span>
+const StyledSecondForm = styled.form`
+  input[type="radio"] {
+    appearance: none;
+    width: fit-content;
+
+    // align our ::before content with the circle border
+    place-content: center;
+
+    // style the radio button alternative
+    &::before {
+      content: '>';
+    }
+
+    &::before, + * {
+      opacity: 0.4;
+      color: white;
+      transition: 0.1s opacity ease-out;
+    }
+
+    // turn lighter when checked
+    &:checked::before, &:checked + * {
+      opacity: 0.7;
+    }
+
+    // underline focused, hovered, & checked text
+    :focus + *,
+    :hover + *,
+    &:checked + * {
+      @apply underline;
+    }
+  }
+`;
+
+const SecondFormPart = ({ onSubmit }: {
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}) => {
+  const addressValueRef$ = React.useRef(new rxjs.Subject<string>());
+  const optionsRef = React.useRef<HTMLUListElement>(null);
+  const [currentOptionIndex, setCurrentOptionIndex] = React.useState(0);
+
+  const { patchOrder } = stripe.useOrderContext();
+  const shouldTryAutocomplete = (value: string) => value.length > 4 && value.split(' ')[1]?.length >= 1;
+  const suggestions = rxHooks.useObservableState(
+    rxjs.merge(
+      addressValueRef$.current.pipe(
+        rx.filter((value) => shouldTryAutocomplete(value)),
+        rx.throttleTime(50, rxjs.asyncScheduler, { leading: true, trailing: true }),
+        rx.switchMap((value) => {
+          const results = radar.search(value);
+
+          return rxjs.from(results).pipe(rx.finalize(() => results.abort()));
+        }),
+      ),
+      addressValueRef$.current.pipe(
+        rx.filter((value) => !shouldTryAutocomplete(value)),
+        rx.map(() => []),
+      )
+    ) as rxjs.Observable<radar.Address[]>,
+    [],
+  );
+
+  const wrappedOnSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const address = suggestions[currentOptionIndex];
+    const formattedAddress = new FormData(event.target as HTMLFormElement).get('address');
+
+    if (address?.formattedAddress !== formattedAddress) {
+      // TODO - sentry
+      console.error('Address mismatch', address.formattedAddress, formattedAddress);
+    }
+
+    // TODO - patch selected address into the order
+    patchOrder({ address, shouldSubmit: true })
+      .then(() => onSubmit(event));
+  }, [suggestions, currentOptionIndex]);
+
+  React.useEffect(() => {
+    if (!suggestions || suggestions.length === 0) {
+      setCurrentOptionIndex(0);
+    } else if (currentOptionIndex > suggestions.length - 1) {
+      setCurrentOptionIndex(suggestions.length - 1);
+    }
+  }, [suggestions, currentOptionIndex]);
+
+  const goToOption = React.useCallback((direction: 'next' | 'previous') => {
+    const newOptionIndex = direction === 'next'
+      ? (currentOptionIndex + 1) % suggestions.length
+      : (currentOptionIndex - 1) < 0 ? suggestions.length - 1 : currentOptionIndex - 1;
+
+    setCurrentOptionIndex(newOptionIndex);
+  }, [suggestions, currentOptionIndex]);
+
+  React.useEffect(() => {
+    const options = optionsRef.current?.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+    options?.forEach((option, index) => {
+      if (index === currentOptionIndex) {
+        option.setAttribute('checked', '');
+      } else {
+        option.removeAttribute('checked');
+        option.blur();
+      }
+    });
+  }, [currentOptionIndex]);
+
+  useNextPreviousShortcuts(goToOption, { useArrows: 'vertical', charsRequireCtrl: true });
+
+  return <StyledSecondForm onSubmit={wrappedOnSubmit}>
+    <section>
+      <label className="w-full">
+        <h4>
+          What is your civic address?
+          <span className="instruction">
+            {/* todo - instruction-style text */}
+            {' '}(&lt;enter&gt; to select)
+          </span>
+        </h4>
+        <input.TypeyInput required type="search" onChange={(e) => addressValueRef$.current.next(e.target.value)} />
+      </label>
+      <ul ref={optionsRef}>
+        {suggestions.map((suggestion, index) => <li key={suggestion.formattedAddress}>
+          <label>
+            <input
+              type="radio"
+              name="address"
+              checked={index === currentOptionIndex}
+              onChange={() => setCurrentOptionIndex(index)}
+              value={suggestion.formattedAddress} />
+            <span>{suggestion.formattedAddress}</span>
+            {index !== currentOptionIndex ? null : <span className="instruction">
+              {' '}(&lt;enter&gt; to select)
+            </span>}
           </label>
-        </section>
-        {didSubmit ? null : (<>
+        </li>)}
+      </ul>
+    </section>
+  </StyledSecondForm>;
+};
+
+const OrderForm = () => {
+  const { order$ } = stripe.useOrderContext();
+  const [selectedOption, setSelectedOption] = React.useState(DEFAULT_PACKAGE);
+  const [currentFormPart, setCurrentFormPart] = React.useState(0);
+  const [highestFormPart, setHighestFormPart] = React.useState(currentFormPart);
+
+  const order = rxHooks.useObservableState(order$, null);
+  rxHooks.useSubscription(order$, console.log.bind(console, 'subscription!!'));
+
+  React.useEffect(() => {
+    if (currentFormPart > highestFormPart) {
+      setHighestFormPart(currentFormPart);
+    }
+  }, [currentFormPart, highestFormPart]);
+
+  return (
+    <>
+      <FirstFormPart onSelectedOption={setSelectedOption} onSubmit={() => setCurrentFormPart(1)} />
+      {highestFormPart < 1 ? (
+        <>
           <section className="border-dashed border-2 mt-3 p-2">
             <h4 className="mb-1 underline" >Goodies</h4>
             <ul>
@@ -224,27 +358,27 @@ const InnerModal = (props: Omit<Parameters<typeof modal.Modal>[0], 'children'>) 
           </section>
           <section>
             <button type="submit">
-            Proceed to payment (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
+            Proceed to payment (${Math.round(data.PACKAGE_CONFIGS[selectedOption].price / 100)})
             </button>
           </section>
-        </>)}
-      </form>
-      {!didSubmit ? null : (<>
-        <stripe.Context amount={PACKAGE_CONFIGS[selectedOption].price}>
-          <stripe.Form email={email}>
-            <section>
-              <h4>Payment</h4>
-              <stripe.Payment options={{ fields: { billingDetails: { email: 'never' } } }} />
-            </section>
-            <section>
-              <button type="submit">
-            Purchase {PACKAGE_CONFIGS[selectedOption].label} package (${Math.round(PACKAGE_CONFIGS[selectedOption].price / 100)})
-              </button>
-            </section>
-          </stripe.Form>
-        </stripe.Context>
-      </>)}
-    </modal.Modal>
+        </>
+      ) : (
+        <SecondFormPart onSubmit={() => setCurrentFormPart(2)} />
+      )}
+      {highestFormPart < 2 || !order ? null : (
+        <stripe.PaymentForm paymentIntent={order.paymentIntent}>
+          <section>
+            <h4>Payment</h4>
+            <stripe.PaymentElement options={{ fields: { billingDetails: { email: 'never' } } }} />
+          </section>
+          <section>
+            <button type="submit">
+            Purchase {data.PACKAGE_CONFIGS[selectedOption].label} package (<text.Price amount={order.total ?? data.PACKAGE_CONFIGS[selectedOption].price} />, incl.tax)
+            </button>
+          </section>
+        </stripe.PaymentForm>
+      )}
+    </>
   );
 };
 
@@ -291,58 +425,5 @@ export const Modal = styled(InnerModal)`
 
   input {
     appearance: none;
-    // clear default display
-    background-color: transparent;
-    color: inherit;
-    caret-color: transparent;
-    // todo - mobile
-    width: 0;
-
-    &::selection {
-      background-color: white;
-      color: black;
-    }
-  }
-
-  input[type="text"] {
-    + span {
-      @apply inline-block;
-      word-wrap: break-word;
-    }
-  }
-
-  input[type="radio"] {
-    appearance: none;
-    width: fit-content;
-
-    // align our ::before content with the circle border
-    display: grid;
-    place-content: center;
-
-    // style the radio button alternative
-    &::before {
-      content: '🤖';
-      transform: scale(0.4);
-      transition: 0.1s transform ease-out;
-    }
-
-    // grow our head when checked
-    &:checked::before {
-      transform: scale(1.5);
-      transition-delay: 0.07s;
-    }
-
-    // underline focused, hovered, & checked text
-    :focus + *,
-    :hover + *,
-    &:checked + * {
-      @apply underline;
-    }
-
-    // set color on checked text
-    &:checked + * {
-      color: var(--form-control-color);
-    }
   }
 `;
-

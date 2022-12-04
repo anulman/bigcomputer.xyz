@@ -1,48 +1,32 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as stripe from 'stripe';
 
-const stripeApi = new stripe.Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-08-01' });
+import * as utils from '@src/utils/api';
+
+// @ts-expect-error 2322
+const stripeApi = new stripe.Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-08-01;orders_beta=v4' });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { PaymentIntentId: paymentIntentId, ajs_anonymous_id: anonymousId } = req.cookies;
+  const { ajs_anonymous_id: anonymousId } = req.cookies;
 
   if (req.method === 'POST') {
     try {
       // todo - type!!
       const json = JSON.parse(req.body);
-      const intent = await stripeApi.paymentIntents.create({
-        amount: json.amount,
+      const order = await stripeApi.orders.create({
         currency: 'usd',
-        automatic_payment_methods: { enabled: true },
-        setup_future_usage: 'on_session',
-        metadata: { anonymousId },
+        automatic_tax: { enabled: true },
+        billing_details: {
+          email: json.email,
+        },
+        line_items: json.lineItems,
+        metadata: { anonymousId: anonymousId.replace(/"/g, '') },
       }, { idempotencyKey: json.idempotencyKey });
 
-      res.status(201).json({ id: intent.id, clientSecret: intent.client_secret });
+      res.status(201).json(utils.stripeApiOrderToOrder(order));
     } catch (err) {
       console.error(err);
-      res.status(500).send('Unknown error while creating payment intent');
-    }
-  } else if (req.method === 'GET' && paymentIntentId) {
-    try {
-      const intent = await stripeApi.paymentIntents.retrieve(paymentIntentId);
-      res.status(200).json({
-        id: intent.id,
-        clientSecret: intent.client_secret,
-        isComplete: intent.status === 'succeeded' || intent.status === 'canceled',
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Unknown error while retrieving payment intent');
-    }
-  } else if (req.method === 'PATCH' && paymentIntentId) {
-    try {
-      const json = JSON.parse(req.body);
-      await stripeApi.paymentIntents.update(paymentIntentId, { amount: json.amount }, { idempotencyKey: json.idempotencyKey });
-      res.status(200).send('');
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Unknown error while retrieving payment intent');
+      res.status(500).send('Unknown error while creating order');
     }
   } else {
     res.status(501).send(`Method ${req.method} not implemented`);

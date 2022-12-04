@@ -1,5 +1,5 @@
 type Cookies = Record<string, unknown> & {
-  PaymentIntentId: string;
+  OrderId: string;
   LastLoadedAt: number;
   LastUnloadedAt: number;
 };
