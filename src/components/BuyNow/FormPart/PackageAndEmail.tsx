@@ -4,43 +4,27 @@ import { styled } from '@linaria/react';
 import * as data from '@src/data';
 import * as stripe from '@src/components/Stripe';
 import * as input from '@src/parts/Input';
+import * as form from '@src/parts/Form';
 import * as text from '@src/parts/Text';
 
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
 
-const Styled = styled.form`
-  input[type="radio"] {
-    appearance: none;
-    width: fit-content;
+const RobotRadio = styled(form.Radio)`
+  // center our ::before content within the circle border
+  display: grid;
+  place-content: center;
 
-    // align our ::before content with the circle border
-    display: grid;
-    place-content: center;
+  // style the radio button alternative
+  &::before {
+    content: '🤖';
+    transform: scale(0.4);
+    transition: 0.1s transform ease-out;
+  }
 
-    // style the radio button alternative
-    &::before {
-      content: '🤖';
-      transform: scale(0.4);
-      transition: 0.1s transform ease-out;
-    }
-
-    // grow our head when checked
-    &:checked::before {
-      transform: scale(1.5);
-      transition-delay: 0.07s;
-    }
-
-    // underline focused, hovered, & checked text
-    :focus + *,
-    :hover + *,
-    &:checked + * {
-      @apply underline;
-    }
-
-    // set color on checked text
-    &:checked + * {
-      color: var(--form-control-color);
-    }
+  // grow our head when checked
+  &:checked::before {
+    transform: scale(1.5);
+    transition-delay: 0.07s;
   }
 `;
 
@@ -107,7 +91,7 @@ export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubm
   useNextPreviousShortcuts(goToOption, { useArrows: false, canUseChars: false });
 
   return (
-    <Styled onSubmit={wrappedOnSubmit} {...props}>
+    <form onSubmit={wrappedOnSubmit} {...props}>
       <section>
         <h4>
           Select your presales package:
@@ -121,8 +105,7 @@ export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubm
 
             return (
               <label className="flex" key={option} aria-selected={selectedOption === option}>
-                <input
-                  type="radio"
+                <RobotRadio
                   name="package_option"
                   value={option}
                   checked={selectedOption === option}
@@ -168,7 +151,6 @@ export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubm
           </section>
         </>
       )}
-    </Styled>
+    </form>
   );
 };
-
