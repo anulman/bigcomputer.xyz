@@ -6,41 +6,27 @@ import { styled } from '@linaria/react';
 import * as mapbox from '@src/utils/mapbox';
 
 import * as stripe from '@src/components/Stripe';
+import * as form from '@src/parts/Form';
 import * as input from '@src/parts/Input';
 import * as text from '@src/parts/Text';
 
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
 
-const Styled = styled.form`
-  input[type="radio"] {
-    appearance: none;
-    width: fit-content;
+const Suggestion = styled(form.Radio)`
+  // style the radio button alternative
+  &::before {
+    content: '>';
+  }
 
-    // align our ::before content with the circle border
-    place-content: center;
+  // by default show suggestions with low opacity
+  &::before, + * {
+    opacity: 0.4;
+    transition: 0.1s opacity ease-out;
+  }
 
-    // style the radio button alternative
-    &::before {
-      content: '>';
-    }
-
-    &::before, + * {
-      opacity: 0.4;
-      color: white;
-      transition: 0.1s opacity ease-out;
-    }
-
-    // turn lighter when checked
-    &:checked::before, &:checked + * {
-      opacity: 0.7;
-    }
-
-    // underline focused, hovered, & checked text
-    :focus + *,
-    :hover + *,
-    &:checked + * {
-      @apply underline;
-    }
+  // turn lighter when checked
+  &:checked::before, &:checked + * {
+    opacity: 0.7;
   }
 `;
 
@@ -116,7 +102,7 @@ export const AddressForm = ({ onSubmit }: {
 
   useNextPreviousShortcuts(goToOption, { useArrows: 'vertical', charsRequireCtrl: true });
 
-  return <Styled onSubmit={wrappedOnSubmit}>
+  return <form onSubmit={wrappedOnSubmit}>
     <section>
       <label className="w-full">
         <h4>
@@ -130,8 +116,7 @@ export const AddressForm = ({ onSubmit }: {
       <ul ref={optionsRef}>
         {suggestions.map((suggestion, index) => <li key={suggestion.full_address}>
           <label>
-            <input
-              type="radio"
+            <Suggestion
               name="address"
               checked={index === currentOptionIndex}
               onChange={() => setCurrentOptionIndex(index)}
@@ -144,5 +129,5 @@ export const AddressForm = ({ onSubmit }: {
         </li>)}
       </ul>
     </section>
-  </Styled>;
+  </form>;
 };
