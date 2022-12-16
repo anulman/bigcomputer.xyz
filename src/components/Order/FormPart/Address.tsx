@@ -5,14 +5,14 @@ import * as rxHooks from 'observable-hooks';
 import { styled } from '@linaria/react';
 import * as mapbox from '@src/utils/mapbox';
 
-import * as stripe from '@src/components/Stripe';
+import * as order from '@src/components/Order';
 import * as form from '@src/parts/Form';
 import * as input from '@src/parts/Input';
 import * as text from '@src/parts/Text';
 
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
 
-const Suggestion = styled(form.Radio)`
+const Suggestion = styled(input.Radio)`
   // style the radio button alternative
   &::before {
     content: '>';
@@ -30,14 +30,13 @@ const Suggestion = styled(form.Radio)`
   }
 `;
 
-export const AddressForm = ({ onSubmit }: {
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) => {
+export const AddressForm = () => {
   const addressValueRef$ = React.useRef(new rxjs.Subject<string>());
   const optionsRef = React.useRef<HTMLUListElement>(null);
   const [currentOptionIndex, setCurrentOptionIndex] = React.useState(0);
 
-  const { patchOrder } = stripe.useOrderContext();
+  const { submitFormPart } = form.useMultipartContext();
+  const { patchOrder } = order.useFormContext();
   const shouldTryAutocomplete = (value: string) => value.length > 4 && value.split(' ')[1]?.length >= 1;
   const suggestions = rxHooks.useObservableState(
     rxjs.merge(
@@ -58,18 +57,21 @@ export const AddressForm = ({ onSubmit }: {
     [],
   );
 
-  const wrappedOnSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const onSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    const afterSubmit = submitFormPart(event);
     const address = suggestions[currentOptionIndex];
     const formattedAddress = new FormData(event.target as HTMLFormElement).get('address');
 
     if (address?.full_address !== formattedAddress) {
       // TODO - sentry
       console.error('Address mismatch', address.full_address, formattedAddress);
+      afterSubmit.setError('Address did not match; please try again.');
+      return;
     }
 
     patchOrder({ address, shouldSubmit: true })
-      .then(() => onSubmit(event));
+      .then(afterSubmit.setSuccess)
+      .catch(afterSubmit.setError);
   }, [suggestions, currentOptionIndex]);
 
   React.useEffect(() => {
@@ -102,7 +104,7 @@ export const AddressForm = ({ onSubmit }: {
 
   useNextPreviousShortcuts(goToOption, { useArrows: 'vertical', charsRequireCtrl: true });
 
-  return <form onSubmit={wrappedOnSubmit}>
+  return <form.FormPart onSubmit={onSubmit}>
     <section>
       <label className="w-full">
         <h4>
@@ -129,5 +131,5 @@ export const AddressForm = ({ onSubmit }: {
         </li>)}
       </ul>
     </section>
-  </form>;
+  </form.FormPart>;
 };

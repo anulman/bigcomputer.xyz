@@ -2,14 +2,14 @@ import * as React from 'react';
 import { styled } from '@linaria/react';
 
 import * as data from '@src/data';
-import * as stripe from '@src/components/Stripe';
-import * as input from '@src/parts/Input';
+import * as order from '@src/components/Order';
 import * as form from '@src/parts/Form';
+import * as input from '@src/parts/Input';
 import * as text from '@src/parts/Text';
 
 import { useNextPreviousShortcuts } from '@src/hooks/use-next-previous-shortcuts';
 
-const RobotRadio = styled(form.Radio)`
+const RobotRadio = styled(input.Radio)`
   // center our ::before content within the circle border
   display: grid;
   place-content: center;
@@ -28,14 +28,14 @@ const RobotRadio = styled(form.Radio)`
   }
 `;
 
-export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubmit, ...props }: {
+export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, ...props }: {
   isActive?: boolean;
   onSelectedOption: (option: data.PackageOption) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 } & React.HTMLAttributes<HTMLFormElement>) => {
   const packageOptionsRef = React.useRef<HTMLFieldSetElement>(null);
   const [selectedOption, setSelectedOption] = React.useState<data.PackageOption>(data.DEFAULT_PACKAGE);
-  const { patchOrder } = stripe.useOrderContext();
+  const { submitFormPart } = form.useMultipartContext();
+  const { patchOrder } = order.useFormContext();
 
   const goToOption = React.useCallback((direction: 'next' | 'previous') => {
     const options = packageOptionsRef.current?.querySelectorAll('input[type="radio"][name="package_option"]') as NodeListOf<HTMLInputElement>;
@@ -73,25 +73,27 @@ export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubm
   }, []);
 
   // todo - rehydrate email?
-  const wrappedOnSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const onSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    const afterSubmit = submitFormPart(event);
     const formData = new FormData(event.target as HTMLFormElement);
     const option = formData.get('package_option');
     const email = formData.get('email') as string;
 
     if (option !== selectedOption) {
       console.error('Selection mismatch', option, selectedOption);
+      afterSubmit.setError('Could not select presales package; please try again.');
+      return;
     }
 
     patchOrder({ email, items: data.PACKAGE_CONFIGS[selectedOption].id })
-      .then(() => onSubmit(event));
-  }, [onSubmit]);
+      .then(afterSubmit.setSuccess)
+      .catch(afterSubmit.setError);
+  }, [selectedOption, submitFormPart, patchOrder]);
 
   useNextPreviousShortcuts(goToOption, { useArrows: false, canUseChars: false });
 
   return (
-    <form onSubmit={wrappedOnSubmit} {...props}>
+    <form.FormPart onSubmit={onSubmit} {...props}>
       <section>
         <h4>
           Select your presales package:
@@ -151,6 +153,6 @@ export const PackageAndEmailForm = ({ isActive = false, onSelectedOption, onSubm
           </section>
         </>
       )}
-    </form>
+    </form.FormPart>
   );
 };
